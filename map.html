@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>我的 Leaflet 地圖</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- 1. 引入 Leaflet 的 CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        /* 2. 設定地圖容器的大小，這很重要！如果不設定高度，地圖會看不見 */
+        #map { 
+            height: 500px; 
+            width: 100%;
+            border: 2px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>我的香港、澳門旅遊清單</h2>
+    <!-- 3. 地圖會顯示在這個 div 裡面 -->
+    <div id="map"></div>
+
+    <!-- 4. 引入 Leaflet 的 JS (必須在 div 之後) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    
+    <script>
+       // 1. 初始化地圖
+       var map = L.map('map').setView([22.28, 113.9], 10); 
+       
+       // 2. 載入地圖底圖
+       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+           attribution: '© OpenStreetMap'
+       }).addTo(map);
+       
+       // 3. 建立景點資料陣列
+       var spots = [
+           { name: "太平山頂", lat: 22.2759, lng: 114.1455, info: "香港最高點" },
+           { name: "昂坪360", lat: 22.2541, lng: 113.9051, info: "大嶼山纜車" },
+           { name: "大三巴牌坊", lat: 22.1977, lng: 113.5409, info: "澳門世遺" },
+           { name: "威尼斯人", lat: 22.1477, lng: 113.5599, info: "超大購物中心" }
+       ];
+       
+       // 4. 使用迴圈把景點一次標記上去
+       spots.forEach(function(spot) {
+           L.marker([spot.lat, spot.lng])
+            .addTo(map)
+            .bindPopup(`<b>${spot.name}</b><br>${spot.info}`);
+       });
+    </script>
+</body>
+</html>
