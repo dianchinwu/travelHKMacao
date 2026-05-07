@@ -3,40 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>港澳四日遊行程地圖</title>
+    <title>港澳四日遊</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body { font-family: "Microsoft JhengHei", sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
-        header { padding: 12px 20px; background: #2c3e50; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        header { padding: 10px 20px; background: #2c3e50; color: white; display: flex; justify-content: center; align-items: center; }
         
-        #map { height: 50%; width: 100%; z-index: 1; }
-        #list-container { height: 50%; overflow-y: auto; background: #fff; }
+        #map { height: 45%; width: 100%; z-index: 1; }
+        #list-container { height: 55%; overflow-y: auto; background: #fff; border-top: 2px solid #ddd; }
 
         .day-section { background: #f8f9fa; padding: 10px 20px; font-weight: bold; position: sticky; top: 0; z-index: 2; border-bottom: 2px solid #ddd; color: #555; }
         .list-item { padding: 15px 20px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; align-items: flex-start; transition: 0.2s; }
-        .list-item:hover { background: #f0f0f0; }
+        .list-item:hover { background: #f9f9f9; }
         
         .num-tag { 
-            color: white; border-radius: 50%; width: 32px; height: 32px; 
-            display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 0.7rem; font-weight: bold; flex-shrink: 0; margin-top: 2px;
+            color: white; border-radius: 50%; width: 30px; height: 30px; 
+            display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 0.75rem; font-weight: bold; flex-shrink: 0;
         }
 
-        /* 天數顏色規則 */
-        .bg-day1 { background-color: #ff5252; } /* 第一天：紅 */
-        .bg-day2 { background-color: #ffc107; color: #333; } /* 第二天：黃 */
-        .bg-day3 { background-color: #4caf50; } /* 第三天：綠 */
-        .bg-day4 { background-color: #2196f3; } /* 第四天：藍 */
+        .bg-day1 { background-color: #ff5252; } 
+        .bg-day2 { background-color: #ffc107; color: #333; } 
+        .bg-day3 { background-color: #4caf50; } 
+        .bg-day4 { background-color: #2196f3; } 
 
-        .item-info h3 { margin: 0; font-size: 1rem; color: #333; }
-        .item-info p { margin: 4px 0 0; font-size: 0.85rem; color: #666; white-space: pre-line; line-height: 1.4; }
-        .flight-tag { display: inline-block; background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; color: #444; margin-top: 4px; border-left: 3px solid #666; }
+        .item-info h3 { margin: 0; font-size: 1.05rem; color: #333; }
+        .flight-detail { background: #f0f7ff; padding: 10px; border-radius: 5px; margin-top: 8px; font-size: 0.85rem; color: #444; border-left: 4px solid #2196f3; line-height: 1.5; }
+        hr { border: 0; border-top: 1px dashed #abc; margin: 8px 0; }
     </style>
 </head>
 <body>
 
-    <header>
-        <span>📍 港澳四日遊行程 (2026/05/28 - 05/31)</span>
-    </header>
+    <header><h1>港澳四日遊</h1></header>
 
     <div id="map"></div>
     <div id="list-container"></div>
@@ -54,7 +51,7 @@
             });
         }
 
-        const icons = {
+        const configs = {
             "Day 1": { marker: createIcon('red'), cssClass: 'bg-day1' },
             "Day 2": { marker: createIcon('gold'), cssClass: 'bg-day2' },
             "Day 3": { marker: createIcon('green'), cssClass: 'bg-day3' },
@@ -62,12 +59,13 @@
         };
 
         var itinerary = [
-            { day: "Day 1", id: "1-1", name: "香港機場", lat: 22.3080, lng: 113.9185, info: "✈️ 星宇航空 JX233\n2026年5月28日 週四\n台北(TPE) 08:00 → 香港(HKG) 09:55" },
+            { day: "Day 1", id: "1-1", name: "香港機場 (抵達)", lat: 22.3080, lng: 113.9185, 
+              flight: "<b>✈️ 星宇航空 JX233</b><br>📅 2026/05/28 (週四)<br>🛫 台北(TPE) <b>T1</b> 08:00<br>🛬 香港(HKG) <b>T1</b> 09:55<br>⏱️ 飛行時間：1小時55分" },
             { day: "Day 1", id: "1-2", name: "香港旺角帝盛酒店", lat: 22.3213, lng: 114.1622 },
             { day: "Day 1", id: "1-3", name: "蘭芳園 (尖沙咀)", lat: 22.2965, lng: 114.1719 },
-            { day: "Day 1", id: "1-4", name: "尖沙咀", lat: 22.2988, lng: 114.1787 },
+            { day: "Day 1", id: "1-4", name: "尖沙咀區域", lat: 22.2988, lng: 114.1787 },
             { day: "Day 1", id: "1-5", name: "女人街食飯公司", lat: 22.2974, lng: 114.1740 },
-            { day: "Day 1", id: "1-6", name: "太平山", lat: 22.2759, lng: 114.1455 },
+            { day: "Day 1", id: "1-6", name: "太平山頂", lat: 22.2759, lng: 114.1455 },
 
             { day: "Day 2", id: "2-1", name: "香港迪士尼樂園", lat: 22.3133, lng: 114.0433 },
 
@@ -76,19 +74,20 @@
             { day: "Day 3", id: "3-3", name: "澳門外港碼頭", lat: 22.1970, lng: 113.5560 },
             { day: "Day 3", id: "3-4", name: "澳門勵庭海景酒店", lat: 22.1914, lng: 113.5546 },
             { day: "Day 3", id: "3-5", name: "澳門金沙", lat: 22.1920, lng: 113.5550 },
-            { day: "Day 3", id: "3-6", name: "威尼斯人", lat: 22.1477, lng: 113.5599 },
+            { day: "Day 3", id: "3-6", name: "威尼斯人度假村", lat: 22.1477, lng: 113.5599 },
             { day: "Day 3", id: "3-7", name: "官也街", lat: 22.1533, lng: 113.5573 },
             { day: "Day 3", id: "3-8", name: "咀香園餅家", lat: 22.1534, lng: 113.5574 },
             { day: "Day 3", id: "3-9", name: "龍環葡韻住宅式博物館", lat: 22.1530, lng: 113.5590 },
             { day: "Day 3", id: "3-10", name: "澳門新濠天地水舞間", lat: 22.1490, lng: 113.5650 },
 
-            { day: "Day 4", id: "4-1", name: "新葡京", lat: 22.1890, lng: 113.5440 },
-            { day: "Day 4", id: "4-2", name: "大三巴", lat: 22.1975, lng: 113.5406 },
+            { day: "Day 4", id: "4-1", name: "新葡京酒店", lat: 22.1890, lng: 113.5440 },
+            { day: "Day 4", id: "4-2", name: "大三巴牌坊", lat: 22.1975, lng: 113.5406 },
             { day: "Day 4", id: "4-3", name: "玫瑰聖母堂", lat: 22.1940, lng: 113.5400 },
             { day: "Day 4", id: "4-4", name: "東望洋燈塔", lat: 22.1965, lng: 113.5498 },
             { day: "Day 4", id: "4-5", name: "漁人碼頭", lat: 22.1930, lng: 113.5580 },
             { day: "Day 4", id: "4-6", name: "澳門勵庭海景酒店", lat: 22.1914, lng: 113.5546 },
-            { day: "Day 4", id: "4-7", name: "澳門機場", lat: 22.1494, lng: 113.5917, info: "✈️ 2026年5月31日 週日\n● JX332: 澳門(MFM) 19:15 → 台中(RMQ) 21:10\n● JX 206: 澳門(MFM) 20:50 → 台北(TPE) 22:40" }
+            { day: "Day 4", id: "4-7", name: "澳門機場 (離境)", lat: 22.1494, lng: 113.5917,
+              flight: "<b>✈️ 星宇航空 JX332</b><br>📅 2026/05/31 (週日)<br>🛫 澳門(MFM) <b>客運大樓</b> 19:15<br>🛬 台中(RMQ) <b>T2</b> 21:10<hr><b>✈️ 星宇航空 JX206</b><br>📅 2026/05/31 (週日)<br>🛫 澳門(MFM) <b>客運大樓</b> 20:50<br>🛬 台北(TPE) <b>T1</b> 22:40" }
         ];
 
         var listContainer = document.getElementById('list-container');
@@ -104,19 +103,20 @@
                 listContainer.appendChild(dayHeader);
             }
 
-            var config = icons[item.day];
+            var config = configs[item.day];
             item.marker = L.marker([item.lat, item.lng], { icon: config.marker })
                 .addTo(map)
-                .bindPopup(`<b>${item.id} ${item.name}</b>${item.info ? '<br><small>' + item.info.replace(/\n/g, '<br>') + '</small>' : ''}`);
+                .bindPopup(`<b>${item.id} ${item.name}</b>${item.flight ? '<br><div style="font-size:0.8rem; margin-top:5px; border-top:1px solid #ccc; padding-top:5px;">' + item.flight + '</div>' : ''}`);
             markers.push(item.marker);
 
             var li = document.createElement('div');
             li.className = 'list-item';
+            var flightHTML = item.flight ? `<div class="flight-detail">${item.flight}</div>` : '';
             li.innerHTML = `
                 <div class="num-tag ${config.cssClass}">${item.id}</div>
                 <div class="item-info">
                     <h3>${item.name}</h3>
-                    ${item.info ? `<p>${item.info}</p>` : ''}
+                    ${flightHTML}
                 </div>
             `;
             
@@ -124,6 +124,7 @@
                 map.flyTo([item.lat, item.lng], 16);
                 item.marker.openPopup();
             };
+
             listContainer.appendChild(li);
         });
 
