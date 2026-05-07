@@ -7,7 +7,22 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body { font-family: "Microsoft JhengHei", sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
-        header { padding: 10px 20px; background: #2c3e50; color: white; display: flex; justify-content: center; align-items: center; }
+        
+        /* 標題列：緊貼文字高度 */
+        header { 
+            padding: 5px 15px; 
+            background: #2c3e50; 
+            color: white; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+        }
+        header h1 { 
+            margin: 0; 
+            font-size: 1.1rem; 
+            line-height: 1.2; 
+            font-weight: bold;
+        }
         
         #map { height: 45%; width: 100%; z-index: 1; }
         #list-container { height: 55%; overflow-y: auto; background: #fff; border-top: 2px solid #ddd; }
@@ -33,7 +48,9 @@
 </head>
 <body>
 
-    <header><h1>港澳四日遊</h1></header>
+    <header>
+        <h1>📍 港澳四日遊行程 (2026/05/28 ~ 05/31)</h1>
+    </header>
 
     <div id="map"></div>
     <div id="list-container"></div>
