@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>香港迪士尼樂園 互動地圖</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #c9a84c; --gold-light: #e8cc7a;
+    --deep-blue: #0d1b3e; --cream: #fdf6e3;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--deep-blue); color:var(--cream); font-family:'Noto Sans TC',sans-serif; min-height:100vh; overflow-x:hidden; }
+  body::before { content:''; position:fixed; inset:0; background: radial-gradient(ellipse at 20% 50%,rgba(74,144,217,.07) 0%,transparent 55%), radial-gradient(ellipse at 80% 20%,rgba(155,107,191,.07) 0%,transparent 50%); pointer-events:none; z-index:0; }
+
+  header { position:relative; z-index:10; text-align:center; padding:22px 20px 14px; border-bottom:1px solid rgba(201,168,76,.2); background:linear-gradient(180deg,rgba(13,27,62,.98) 0%,rgba(13,27,62,.75) 100%); }
+  header .subtitle { font-size:10px; letter-spacing:4px; color:var(--gold); text-transform:uppercase; margin-bottom:5px; }
+  header h1 { font-family:'Noto Serif TC',serif; font-size:clamp(17px,3.5vw,26px); font-weight:700; color:var(--cream); letter-spacing:2px; text-shadow:0 0 24px rgba(201,168,76,.35); }
+  header h1 span { color:var(--gold); }
+  header .date-badge { display:inline-block; margin-top:7px; padding:3px 14px; background:rgba(201,168,76,.12); border:1px solid rgba(201,168,76,.35); border-radius:20px; font-size:11px; color:var(--gold-light); letter-spacing:2px; }
+
+  .legend { position:relative; z-index:10; display:flex; flex-wrap:wrap; gap:5px; justify-content:center; padding:9px 14px; background:rgba(13,27,62,.6); border-bottom:1px solid rgba(255,255,255,.06); }
+  .legend-item { display:flex; align-items:center; gap:5px; padding:3px 9px; border-radius:20px; cursor:pointer; font-size:11px; font-weight:500; border:1.5px solid transparent; transition:all .2s; background:rgba(255,255,255,.05); white-space:nowrap; }
+  .legend-item:hover { transform:translateY(-1px); }
+  .legend-item .dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+  .legend-item.active { background:rgba(255,255,255,.1); }
+
+  .main-layout { position:relative; z-index:10; display:flex; height:calc(100vh - 150px); min-height:520px; }
+
+  /* MAP */
+  .map-panel { flex:0 0 60%; position:relative; padding:14px; display:flex; align-items:center; justify-content:center; border-right:1px solid rgba(255,255,255,.07); overflow:hidden; }
+  .map-wrap { position:relative; width:100%; max-width:560px; }
+  .map-svg { width:100%; height:100%; display:block; }
+
+  .zone { cursor:pointer; transition:filter .2s, opacity .25s; }
+  .zone.dimmed { opacity:.22; }
+  .zone.highlighted > * { filter:brightness(1.25); }
+  .map-dot { cursor:pointer; transition:opacity .2s; }
+  .map-dot.dimmed { opacity:.12; }
+  .map-dot .dot-outer { transition:r .15s; }
+  .map-dot:hover .dot-outer { r:8; }
+
+  /* SIDE PANEL */
+  .side-panel { flex:1; display:flex; flex-direction:column; overflow:hidden; background:rgba(8,16,45,.55); }
+  .side-header { padding:13px 17px 9px; border-bottom:1px solid rgba(255,255,255,.07); flex-shrink:0; }
+  .side-header h2 { font-family:'Noto Serif TC',serif; font-size:14px; color:var(--gold-light); margin-bottom:3px; }
+  .side-header p { font-size:10px; color:rgba(255,255,255,.4); }
+  .filter-tabs { display:flex; gap:5px; padding:8px 17px; border-bottom:1px solid rgba(255,255,255,.06); flex-shrink:0; }
+  .tab-btn { padding:3px 11px; border-radius:12px; border:1px solid rgba(255,255,255,.14); background:transparent; color:rgba(255,255,255,.45); font-size:11px; cursor:pointer; font-family:'Noto Sans TC',sans-serif; transition:all .18s; }
+  .tab-btn.active { background:var(--gold); border-color:var(--gold); color:var(--deep-blue); font-weight:600; }
+
+  .zone-list { flex:1; overflow-y:auto; padding:5px 0 18px; }
+  .zone-list::-webkit-scrollbar { width:3px; }
+  .zone-list::-webkit-scrollbar-thumb { background:rgba(201,168,76,.28); border-radius:2px; }
+  .zone-section { margin-bottom:2px; transition:opacity .2s; }
+  .zone-section.dimmed { opacity:.2; }
+  .zone-title { display:flex; align-items:center; gap:7px; padding:7px 17px 5px; cursor:pointer; user-select:none; font-size:11.5px; font-weight:600; letter-spacing:.5px; color:rgba(255,255,255,.78); transition:color .18s; }
+  .zone-title:hover { color:white; }
+  .zone-title .color-bar { width:3px; height:14px; border-radius:2px; flex-shrink:0; }
+  .zone-title .count { margin-left:auto; font-size:10px; color:rgba(255,255,255,.28); font-weight:400; }
+  .attraction-list { padding:0 17px 5px; }
+  .attraction-item { display:flex; align-items:center; gap:8px; padding:5px 9px; border-radius:7px; cursor:pointer; transition:background .14s; margin-bottom:2px; }
+  .attraction-item:hover { background:rgba(255,255,255,.06); }
+  .attraction-item.mine-item { background:rgba(201,168,76,.07); }
+  .attraction-item.mine-item .item-name { color:var(--gold-light); }
+  .item-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+  .item-name { font-size:11.5px; color:rgba(255,255,255,.72); flex:1; line-height:1.3; }
+  .item-tags { display:flex; gap:3px; flex-shrink:0; }
+  .tag { font-size:9px; padding:1px 5px; border-radius:4px; font-weight:500; }
+  .tag.show   { background:rgba(155,107,191,.28); color:#c9a0e0; }
+  .tag.thrill { background:rgba(220,60,60,.22);   color:#f09090; }
+  .tag.family { background:rgba(74,144,217,.22);  color:#90c8f0; }
+  .star { font-size:12px; flex-shrink:0; }
+
+  .tooltip { position:fixed; background:rgba(10,22,60,.96); border:1px solid rgba(201,168,76,.38); border-radius:8px; padding:7px 11px; font-size:11px; color:var(--cream); pointer-events:none; z-index:999; max-width:160px; box-shadow:0 4px 18px rgba(0,0,0,.55); display:none; }
+  .tooltip.vis { display:block; }
+  .tooltip strong { color:var(--gold-light); display:block; margin-bottom:2px; font-size:11.5px; }
+
+  .stats-bar { position:relative; z-index:10; display:flex; justify-content:center; gap:28px; padding:8px 20px; border-top:1px solid rgba(255,255,255,.07); background:rgba(13,27,62,.85); }
+  .stat { text-align:center; }
+  .stat .num { font-size:19px; font-weight:700; color:var(--gold); font-family:'Noto Serif TC',serif; }
+  .stat .lbl { font-size:10px; color:rgba(255,255,255,.38); margin-top:1px; }
+
+  @media (max-width:680px) {
+    .main-layout { flex-direction:column; height:auto; }
+    .map-panel { flex:none; height:68vw; min-height:260px; border-right:none; border-bottom:1px solid rgba(255,255,255,.08); }
+    .side-panel { flex:none; max-height:50vh; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="subtitle">✨ 遊玩規劃工具</div>
+  <h1>香港<span>迪士尼</span>樂園</h1>
+  <div class="date-badge">2026 年 5 月 29 日 · 週五</div>
+</header>
+<div class="legend" id="legend"></div>
+<div class="main-layout">
+  <div class="map-panel">
+    <div class="map-wrap">
+      <!--
+        依據官方地圖（followustotravel版）座標系：
+        viewBox 600×520，對應地圖方位：
+        ┌─────────────────────────────────────────┐
+        │ 幻想世界(左上)    城堡(中上)  明日世界(右上)│
+        │ 魔雪奇緣(左中)              美國小鎮(右中)│
+        │ 反斗奇兵(左下)  迷離莊園(中下底) 探險/灰熊│
+        └──────────────────────────────── 入口(右)┘
+        北↑ 在左上，入口在右側偏下
+      -->
+      <svg class="map-svg" viewBox="0 0 600 520" xmlns="http://www.w3.org/2000/svg" id="mapSvg">
+        <defs>
+          <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M20 0L0 0 0 20" fill="none" stroke="rgba(255,255,255,0.022)" stroke-width="0.5"/>
+          </pattern>
+          <radialGradient id="bgG" cx="50%" cy="50%" r="65%">
+            <stop offset="0%" stop-color="#1a2c5a" stop-opacity="0.8"/>
+            <stop offset="100%" stop-color="#090f22" stop-opacity="1"/>
+          </radialGradient>
+          <filter id="softshadow" x="-10%" y="-10%" width="120%" height="120%">
+            <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.4)"/>
+          </filter>
+        </defs>
+
+        <!-- Background -->
+        <rect width="600" height="520" fill="url(#bgG)" rx="10"/>
+        <rect width="600" height="520" fill="url(#grid)" rx="10"/>
+
+        <!-- Park outer boundary (irregular polygon matching map shape) -->
+        <polygon points="30,30 370,20 580,80 590,320 520,480 380,510 200,510 60,440 20,270"
+          fill="rgba(30,55,30,0.18)" stroke="rgba(201,168,76,0.22)" stroke-width="1.5" stroke-dasharray="5,4"/>
+
+        <!-- ═══════════════════════════════════
+             ZONES — positions match the uploaded map image
+             Coordinate reference:
+               Left side: x≈30-180
+               Center:    x≈180-380
+               Right side:x≈380-590
+               Top:       y≈20-160
+               Middle:    y≈160-330
+               Bottom:    y≈330-510
+        ═══════════════════════════════════ -->
+
+        <!-- 1. 幻想世界 — TOP LEFT (largest zone, upper-left quadrant) -->
+        <g class="zone" data-zone="fantasy" onclick="selectZone('fantasy')">
+          <ellipse cx="130" cy="145" rx="115" ry="118" fill="#9b6bbf" opacity="0.75"/>
+          <text x="100" y="118" text-anchor="middle" fill="white" font-size="13" font-family="Noto Sans TC" font-weight="700">幻想世界</text>
+          <text x="100" y="134" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="9" font-family="Noto Sans TC">Fantasyland</text>
+        </g>
+
+        <!-- 2. 魔雪奇緣世界 — LEFT MIDDLE (below fantasyland) -->
+        <g class="zone" data-zone="frozen" onclick="selectZone('frozen')">
+          <ellipse cx="90" cy="300" rx="85" ry="85" fill="#5bb8d4" opacity="0.78"/>
+          <text x="90" y="293" text-anchor="middle" fill="white" font-size="11.5" font-family="Noto Sans TC" font-weight="700">魔雪奇緣世界</text>
+          <text x="90" y="308" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="8.5" font-family="Noto Sans TC">World of Frozen</text>
+        </g>
+
+        <!-- 3. 反斗奇兵大本營 — BOTTOM LEFT -->
+        <g class="zone" data-zone="toy-story" onclick="selectZone('toy-story')">
+          <ellipse cx="115" cy="430" rx="95" ry="72" fill="#d4a020" opacity="0.78"/>
+          <text x="115" y="423" text-anchor="middle" fill="white" font-size="11" font-family="Noto Sans TC" font-weight="700">反斗奇兵大本營</text>
+          <text x="115" y="438" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="8.5" font-family="Noto Sans TC">Toy Story Land</text>
+        </g>
+
+        <!-- 4. 迷離莊園 — BOTTOM CENTER-LEFT -->
+        <g class="zone" data-zone="mystic" onclick="selectZone('mystic')">
+          <ellipse cx="285" cy="455" rx="85" ry="58" fill="#6a4a7a" opacity="0.78"/>
+          <text x="285" y="450" text-anchor="middle" fill="white" font-size="12" font-family="Noto Sans TC" font-weight="700">迷離莊園</text>
+          <text x="285" y="465" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="8.5" font-family="Noto Sans TC">Mystic Point</text>
+        </g>
+
+        <!-- 5. 探險世界 — CENTER-RIGHT (middle-bottom) -->
+        <g class="zone" data-zone="adventure" onclick="selectZone('adventure')">
+          <ellipse cx="380" cy="360" rx="95" ry="88" fill="#4a8f5f" opacity="0.78"/>
+          <text x="380" y="354" text-anchor="middle" fill="white" font-size="12" font-family="Noto Sans TC" font-weight="700">探險世界</text>
+          <text x="380" y="369" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="8.5" font-family="Noto Sans TC">Adventureland</text>
+        </g>
+
+        <!-- 6. 灰熊山谷 — RIGHT LOWER -->
+        <g class="zone" data-zone="grizzly" onclick="selectZone('grizzly')">
+          <ellipse cx="510" cy="400" rx="82" ry="72" fill="#b07040" opacity="0.78"/>
+          <text x="510" y="394" text-anchor="middle" fill="white" font-size="12" font-family="Noto Sans TC" font-weight="700">灰熊山谷</text>
+          <text x="510" y="409" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="8.5" font-family="Noto Sans TC">Grizzly Gulch</text>
+        </g>
+
+        <!-- 7. 明日世界 — TOP RIGHT -->
+        <g class="zone" data-zone="tomorrow" onclick="selectZone('tomorrow')">
+          <ellipse cx="470" cy="155" rx="118" ry="105" fill="#4060b0" opacity="0.75"/>
+          <text x="490" y="122" text-anchor="middle" fill="white" font-size="13" font-family="Noto Sans TC" font-weight="700">明日世界</text>
+          <text x="490" y="138" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="9" font-family="Noto Sans TC">Tomorrowland</text>
+        </g>
+
+        <!-- 8. 美國小鎮大街 — RIGHT MIDDLE (entry side) -->
+        <g class="zone" data-zone="main-street" onclick="selectZone('main-street')">
+          <rect x="460" y="258" width="128" height="115" rx="8" fill="#c0784a" opacity="0.78"/>
+          <text x="524" y="308" text-anchor="middle" fill="white" font-size="11.5" font-family="Noto Sans TC" font-weight="700">美國小鎮大街</text>
+          <text x="524" y="323" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="8.5" font-family="Noto Sans TC">Main Street, U.S.A.</text>
+          <!-- Entry arrow -->
+          <polygon points="588,315 600,322 588,329" fill="rgba(201,168,76,0.7)"/>
+          <text x="580" y="340" text-anchor="middle" fill="rgba(201,168,76,0.8)" font-size="8.5" font-family="Noto Sans TC">🚪入口</text>
+        </g>
+
+        <!-- Castle — CENTER (between all zones, upper-center) -->
+        <g pointer-events="none" filter="url(#softshadow)">
+          <rect x="267" y="195" width="36" height="26" rx="2" fill="rgba(201,168,76,0.42)" stroke="rgba(201,168,76,0.8)" stroke-width="1.2"/>
+          <rect x="275" y="202" width="20" height="19" fill="rgba(13,27,62,0.7)"/>
+          <!-- side turrets -->
+          <polygon points="262,195 267,181 272,195" fill="rgba(201,168,76,0.5)"/>
+          <polygon points="298,195 303,181 308,195" fill="rgba(201,168,76,0.5)"/>
+          <!-- center spire -->
+          <polygon points="278,195 285,172 292,195" fill="rgba(201,168,76,0.68)"/>
+          <!-- flag -->
+          <line x1="285" y1="172" x2="285" y2="165" stroke="rgba(201,168,76,0.85)" stroke-width="1.2"/>
+          <polygon points="285,165 293,168 285,172" fill="rgba(201,168,76,1)"/>
+          <text x="285" y="232" text-anchor="middle" fill="rgba(201,168,76,0.85)" font-size="8" font-family="Noto Sans TC" font-weight="600">迪士尼城堡</text>
+        </g>
+
+        <!-- Railroad track hint (dashed arc) -->
+        <path d="M 200,505 Q 540,500 555,270" fill="none" stroke="rgba(180,140,80,0.25)" stroke-width="2" stroke-dasharray="6,5"/>
+
+        <!-- Compass -->
+        <g transform="translate(32,486)" pointer-events="none" opacity="0.5">
+          <circle cx="0" cy="0" r="14" fill="none" stroke="rgba(201,168,76,0.5)" stroke-width="0.8"/>
+          <polygon points="0,-11 -2.5,-3 0,-5 2.5,-3" fill="rgba(201,168,76,0.9)"/>
+          <polygon points="0,11 -2.5,3 0,5 2.5,3" fill="rgba(255,255,255,0.35)"/>
+          <text x="0" y="-13" text-anchor="middle" font-size="8" fill="rgba(201,168,76,0.9)" font-family="sans-serif" font-weight="bold">N</text>
+        </g>
+
+        <!-- Dots layer -->
+        <g id="dotsLayer"></g>
+      </svg>
+    </div>
+  </div>
+
+  <!-- SIDE PANEL -->
+  <div class="side-panel">
+    <div class="side-header">
+      <h2 id="panelTitle">全部設施 · 8 大園區</h2>
+      <p id="panelSub">點擊地圖上的園區可篩選 · ⭐ 為我的遊玩清單</p>
+    </div>
+    <div class="filter-tabs">
+      <button class="tab-btn active" onclick="setFilter('all')">全部</button>
+      <button class="tab-btn" onclick="setFilter('mine')">我的清單</button>
+      <button class="tab-btn" onclick="setFilter('show')">表演節目</button>
+      <button class="tab-btn" onclick="setFilter('thrill')">刺激設施</button>
+    </div>
+    <div class="zone-list" id="zoneList"></div>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat"><div class="num" id="totalCount">–</div><div class="lbl">設施 / 節目總數</div></div>
+  <div class="stat"><div class="num" id="myCount">–</div><div class="lbl">我的清單</div></div>
+  <div class="stat"><div class="num">8</div><div class="lbl">主題園區</div></div>
+</div>
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const ZONES = [
+  { id:'fantasy',     name:'幻想世界',      emoji:'🏰', color:'#9b6bbf' },
+  { id:'frozen',      name:'魔雪奇緣世界',  emoji:'❄️', color:'#5bb8d4' },
+  { id:'toy-story',   name:'反斗奇兵大本營',emoji:'🧸', color:'#d4a020' },
+  { id:'mystic',      name:'迷離莊園',      emoji:'🔮', color:'#6a4a7a' },
+  { id:'adventure',   name:'探險世界',      emoji:'🌿', color:'#4a8f5f' },
+  { id:'grizzly',     name:'灰熊山谷',      emoji:'⛏️', color:'#b07040' },
+  { id:'tomorrow',    name:'明日世界',      emoji:'🚀', color:'#4060b0' },
+  { id:'main-street', name:'美國小鎮大街',  emoji:'🏙️', color:'#c0784a' },
+];
+
+/*
+  Dot positions (mx,my) match SVG viewBox 600×520
+  Zones reference positions:
+    幻想世界:     left-upper  cx≈130 cy≈145
+    魔雪奇緣:     left-mid    cx≈90  cy≈300
+    反斗奇兵:     left-lower  cx≈115 cy≈430
+    迷離莊園:     bot-center  cx≈285 cy≈455
+    探險世界:     ctr-right   cx≈380 cy≈360
+    灰熊山谷:     right-lower cx≈510 cy≈400
+    明日世界:     top-right   cx≈470 cy≈155
+    美國小鎮大街: right-mid   rect x460-588 y258-373
+*/
+const ATTRACTIONS = [
+  /* 幻想世界 — top-left */
+  { name:'迪士尼魔法書房',   zone:'fantasy', tags:['show'],   mine:true,  mx:68,  my:68  },
+  { name:'小熊維尼歷險之旅', zone:'fantasy', tags:['family'], mine:false, mx:100, my:90  },
+  { name:'小小世界',         zone:'fantasy', tags:['family'], mine:false, mx:145, my:78  },
+  { name:'小飛象旋轉世界',   zone:'fantasy', tags:['family'], mine:false, mx:62,  my:155 },
+  { name:'灰姑娘旋轉木馬',   zone:'fantasy', tags:['family'], mine:false, mx:100, my:165 },
+  { name:'瘋帽子旋轉杯',     zone:'fantasy', tags:['family'], mine:false, mx:148, my:155 },
+  { name:'米奇幻想曲',       zone:'fantasy', tags:['family'], mine:true,  mx:175, my:118 },
+
+  /* 魔雪奇緣世界 — left-mid */
+  { name:'魔雪奇幻之旅', zone:'frozen', tags:['family'], mine:true,  mx:62,  my:278 },
+  { name:'雪嶺滑雪橇',   zone:'frozen', tags:['thrill'], mine:true,  mx:100, my:262 },
+  { name:'森林小天地',   zone:'frozen', tags:['family'], mine:false, mx:112, my:318 },
+
+  /* 反斗奇兵大本營 — bottom-left */
+  { name:'沖天遙控車',     zone:'toy-story', tags:['thrill'], mine:false, mx:68,  my:420 },
+  { name:'玩具兵團跳降傘', zone:'toy-story', tags:['thrill'], mine:false, mx:115, my:408 },
+  { name:'轉轉彈弓狗',     zone:'toy-story', tags:['family'], mine:false, mx:155, my:440 },
+
+  /* 迷離莊園 — bottom-center */
+  { name:'迷離大宅', zone:'mystic', tags:['family','thrill'], mine:true,  mx:262, my:452 },
+  { name:'奇幻庭園', zone:'mystic', tags:['family'],          mine:false, mx:318, my:460 },
+
+  /* 探險世界 — center-right */
+  { name:'森林河流之旅',    zone:'adventure', tags:['family'], mine:true,  mx:355, my:345 },
+  { name:'泰山樹屋之木筏',  zone:'adventure', tags:['family'], mine:false, mx:395, my:325 },
+  { name:'獅子王慶典',      zone:'adventure', tags:['show'],   mine:true,  mx:368, my:388 },
+  { name:'魔海奇緣凱旋慶典',zone:'adventure', tags:['show'],   mine:false, mx:410, my:372 },
+
+  /* 灰熊山谷 — right-lower */
+  { name:'灰熊山極速礦車', zone:'grizzly', tags:['thrill'], mine:true,  mx:495, my:385 },
+  { name:'噴泉山谷',       zone:'grizzly', tags:['family'], mine:false, mx:540, my:418 },
+
+  /* 明日世界 — top-right */
+  { name:'星戰急速穿梭',             zone:'tomorrow', tags:['thrill'], mine:true,  mx:415, my:112 },
+  { name:'鐵甲奇俠飛行之旅',         zone:'tomorrow', tags:['thrill'], mine:true,  mx:455, my:135 },
+  { name:'蟻俠與黃蜂女：擊戰特攻！', zone:'tomorrow', tags:['family'], mine:true,  mx:500, my:118 },
+  { name:'太空飛碟',                 zone:'tomorrow', tags:['family'], mine:false, mx:525, my:158 },
+
+  /* 美國小鎮大街 — right-mid */
+  { name:'動畫藝術教室',     zone:'main-street', tags:['family'], mine:true,  mx:482, my:272 },
+  { name:'懷舊蒸汽火車',     zone:'main-street', tags:['family'], mine:false, mx:524, my:268 },
+  { name:'迪士尼好友巡遊派對',zone:'main-street', tags:['show'],  mine:true,  mx:490, my:300 },
+  { name:'迪士尼星夢光影之旅',zone:'main-street', tags:['show'],  mine:true,  mx:540, my:300 },
+  { name:'迪士尼魔法書房',    zone:'main-street', tags:['show'],  mine:true,  mx:515, my:330 },
+];
+
+let activeZone = null, activeFilter = 'all';
+const getZone = id => ZONES.find(z=>z.id===id);
+
+/* Legend */
+function buildLegend(){
+  const leg=document.getElementById('legend');
+  ZONES.forEach(z=>{
+    const el=document.createElement('div');
+    el.className='legend-item'; el.dataset.zone=z.id;
+    el.innerHTML=`<span class="dot" style="background:${z.color}"></span>${z.emoji} ${z.name}`;
+    el.onclick=()=>selectZone(activeZone===z.id?null:z.id);
+    leg.appendChild(el);
+  });
+}
+
+/* Dots */
+function buildDots(){
+  const layer=document.getElementById('dotsLayer');
+  layer.innerHTML='';
+  const ns='http://www.w3.org/2000/svg';
+  ATTRACTIONS.forEach((a,i)=>{
+    const z=getZone(a.zone);
+    const g=document.createElementNS(ns,'g');
+    g.classList.add('map-dot'); g.dataset.zone=a.zone; g.dataset.idx=i;
+
+    const outer=document.createElementNS(ns,'circle');
+    outer.setAttribute('cx',a.mx); outer.setAttribute('cy',a.my);
+    outer.setAttribute('r','6'); outer.setAttribute('fill',z.color);
+    outer.setAttribute('opacity','0.9'); outer.setAttribute('stroke','rgba(255,255,255,0.32)');
+    outer.setAttribute('stroke-width','1.2'); outer.classList.add('dot-outer');
+
+    const inner=document.createElementNS(ns,'circle');
+    inner.setAttribute('cx',a.mx); inner.setAttribute('cy',a.my);
+    inner.setAttribute('r', a.mine?'3':'1.8');
+    inner.setAttribute('fill', a.mine?'#fff':'rgba(255,255,255,0.4)');
+
+    g.appendChild(outer); g.appendChild(inner);
+    g.addEventListener('mouseenter',e=>showTip(e,a));
+    g.addEventListener('mousemove', e=>moveTip(e));
+    g.addEventListener('mouseleave',hideTip);
+    g.addEventListener('click',()=>selectZone(a.zone));
+    layer.appendChild(g);
+  });
+}
+
+/* Tooltip */
+function showTip(e,a){
+  const t=document.getElementById('tooltip');
+  const lbl={show:'節目',thrill:'刺激',family:'親子'};
+  const tags=a.tags.map(tg=>`<span style="opacity:.65;font-size:9px;">[${lbl[tg]||tg}]</span>`).join(' ');
+  t.innerHTML=`<strong>${a.name}${a.mine?' ⭐':''}</strong>${tags}`;
+  t.classList.add('vis'); moveTip(e);
+}
+function moveTip(e){ const t=document.getElementById('tooltip'); t.style.left=(e.clientX+13)+'px'; t.style.top=(e.clientY-10)+'px'; }
+function hideTip(){ document.getElementById('tooltip').classList.remove('vis'); }
+
+/* List */
+function buildList(){
+  const c=document.getElementById('zoneList'); c.innerHTML='';
+  const lbl={show:'節目',thrill:'刺激',family:'親子'};
+  ZONES.forEach(z=>{
+    let list=ATTRACTIONS.filter(a=>a.zone===z.id);
+    if(activeFilter==='mine')   list=list.filter(a=>a.mine);
+    if(activeFilter==='show')   list=list.filter(a=>a.tags.includes('show'));
+    if(activeFilter==='thrill') list=list.filter(a=>a.tags.includes('thrill'));
+    if(activeFilter!=='all'&&list.length===0) return;
+    const sec=document.createElement('div');
+    sec.className='zone-section'; sec.dataset.zone=z.id;
+    if(activeZone&&activeZone!==z.id) sec.classList.add('dimmed');
+    const ttl=document.createElement('div');
+    ttl.className='zone-title';
+    ttl.innerHTML=`<span class="color-bar" style="background:${z.color}"></span><span>${z.emoji}</span>${z.name}<span class="count">${list.length} 項</span>`;
+    ttl.onclick=()=>selectZone(activeZone===z.id?null:z.id);
+    sec.appendChild(ttl);
+    const ul=document.createElement('div'); ul.className='attraction-list';
+    list.forEach(a=>{
+      const item=document.createElement('div');
+      item.className='attraction-item'+(a.mine?' mine-item':'');
+      const tagsHtml=a.tags.map(tg=>`<span class="tag ${tg}">${lbl[tg]||tg}</span>`).join('');
+      item.innerHTML=`<span class="item-dot" style="background:${z.color}"></span><span class="item-name">${a.name}</span><div class="item-tags">${tagsHtml}</div>${a.mine?'<span class="star">⭐</span>':''}`;
+      item.onclick=()=>selectZone(z.id);
+      ul.appendChild(item);
+    });
+    sec.appendChild(ul); c.appendChild(sec);
+  });
+}
+
+/* Select zone */
+function selectZone(id){
+  activeZone=id;
+  document.querySelectorAll('.legend-item').forEach(el=>{
+    const z=el.dataset.zone;
+    el.style.opacity=activeZone&&activeZone!==z?'0.28':'1';
+    el.classList.toggle('active',z===activeZone);
+    el.style.borderColor=z===activeZone?getZone(z).color:'transparent';
+  });
+  document.querySelectorAll('.zone').forEach(el=>{
+    const z=el.dataset.zone;
+    el.classList.toggle('dimmed',!!(activeZone&&activeZone!==z));
+    el.classList.toggle('highlighted',z===activeZone);
+  });
+  document.querySelectorAll('.map-dot').forEach(dot=>{
+    dot.classList.toggle('dimmed',!!(activeZone&&activeZone!==dot.dataset.zone));
+  });
+  const h=document.getElementById('panelTitle'), s=document.getElementById('panelSub');
+  if(activeZone){ const z=getZone(activeZone); h.textContent=`${z.emoji} ${z.name}`; s.textContent='點擊空白處返回全部 · ⭐ 為我的遊玩清單'; }
+  else { h.textContent='全部設施 · 8 大園區'; s.textContent='點擊地圖上的園區可篩選 · ⭐ 為我的遊玩清單'; }
+  buildList();
+}
+
+/* Filter */
+function setFilter(f){
+  activeFilter=f;
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',['all','mine','show','thrill'][i]===f));
+  buildList();
+}
+
+/* Stats */
+function updateStats(){
+  document.getElementById('totalCount').textContent=ATTRACTIONS.length;
+  document.getElementById('myCount').textContent=ATTRACTIONS.filter(a=>a.mine).length;
+}
+
+/* BG click deselect */
+document.getElementById('mapSvg').addEventListener('click',e=>{ if(e.target.closest('.zone')||e.target.closest('.map-dot')) return; selectZone(null); });
+
+buildLegend(); buildDots(); buildList(); updateStats();
+</script>
+</body>
+</html>
