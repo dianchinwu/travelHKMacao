@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>香港迪士尼樂園 互動地圖</title>
+<title>香港迪士尼樂園</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -72,6 +72,43 @@
   .tag.thrill { background:rgba(220,60,60,.22);   color:#f09090; }
   .tag.family { background:rgba(74,144,217,.22);  color:#90c8f0; }
   .star { font-size:12px; flex-shrink:0; }
+  .item-link { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:4px; background:rgba(255,255,255,0.07); color:rgba(255,255,255,0.35); font-size:10px; text-decoration:none; flex-shrink:0; transition:background .15s, color .15s; }
+  .item-link:hover { background:rgba(201,168,76,0.25); color:var(--gold-light); }
+
+  /* Mode switcher */
+  .mode-tabs { display:flex; border-bottom:2px solid rgba(255,255,255,0.08); flex-shrink:0; }
+  .mode-btn { flex:1; padding:10px 8px; background:transparent; border:none; border-bottom:2px solid transparent; margin-bottom:-2px; color:rgba(255,255,255,0.42); font-size:12px; font-weight:600; cursor:pointer; font-family:'Noto Sans TC',sans-serif; letter-spacing:.5px; transition:all .2s; }
+  .mode-btn.active { color:var(--gold-light); border-bottom-color:var(--gold); background:rgba(201,168,76,0.05); }
+
+  /* Dining */
+  .dining-item { display:flex; flex-direction:column; padding:7px 9px; border-radius:8px; cursor:default; margin-bottom:3px; transition:background .14s; }
+  .dining-item:hover { background:rgba(255,255,255,0.05); }
+  .dining-item.dining-mine { background:rgba(201,168,76,0.08); border-left:2px solid rgba(201,168,76,0.6); padding-left:7px; }
+  .dining-row1 { display:flex; align-items:center; gap:8px; }
+  .dining-name { font-size:11.5px; flex:1; line-height:1.3; color:rgba(255,255,255,0.75); }
+  .dining-mine .dining-name { color:var(--gold-light); }
+  .dining-type { font-size:9px; padding:1px 6px; border-radius:4px; font-weight:500; flex-shrink:0; }
+  .dining-type.meal  { background:rgba(74,190,120,0.2); color:#80e0a0; }
+  .dining-type.snack { background:rgba(220,160,60,0.2);  color:#e8c070; }
+  .dining-row2 { display:flex; align-items:center; gap:6px; margin-top:4px; padding-left:15px; }
+  .dining-food { font-size:10px; color:rgba(255,255,255,0.38); flex:1; font-style:italic; }
+  .dining-mine .dining-food { color:rgba(201,168,76,0.65); }
+  .dining-links { display:flex; gap:4px; flex-shrink:0; }
+  .dining-link { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:4px; text-decoration:none; font-size:11px; transition:background .15s, color .15s; }
+  .dining-link.page { background:rgba(255,255,255,0.07); color:rgba(255,255,255,0.38); }
+  .dining-link.menu-link { background:rgba(74,144,217,0.18); color:#90c8f0; }
+  .dining-link:hover { background:rgba(201,168,76,0.25); color:var(--gold-light); }
+
+  /* Mode tabs (設施 / 餐廳) */
+  .mode-tabs { display:flex; gap:0; border-bottom:2px solid rgba(255,255,255,0.07); flex-shrink:0; }
+  .mode-btn { flex:1; padding:9px 4px; border:none; background:transparent; color:rgba(255,255,255,0.4); font-size:12px; font-weight:600; cursor:pointer; font-family:'Noto Sans TC',sans-serif; transition:all .2s; border-bottom:2px solid transparent; margin-bottom:-2px; letter-spacing:.5px; }
+  .mode-btn.active { color:var(--gold-light); border-bottom-color:var(--gold); }
+  .mode-btn:hover { color:rgba(255,255,255,0.7); }
+
+  /* Dining */
+  .dining-food { font-size:10px; color:rgba(201,168,76,0.78); margin-top:2px; line-height:1.3; }
+  .tag.snack  { background:rgba(80,180,120,0.22); color:#80e0a0; }
+  .tag.dining { background:rgba(220,140,60,0.22); color:#f0a860; }
 
   .tooltip { position:fixed; background:rgba(10,22,60,.96); border:1px solid rgba(201,168,76,.38); border-radius:8px; padding:7px 11px; font-size:11px; color:var(--cream); pointer-events:none; z-index:999; max-width:160px; box-shadow:0 4px 18px rgba(0,0,0,.55); display:none; }
   .tooltip.vis { display:block; }
@@ -91,7 +128,6 @@
 </head>
 <body>
 <header>
-  <div class="subtitle">✨ 遊玩規劃工具</div>
   <h1>香港<span>迪士尼</span>樂園</h1>
   <div class="date-badge">2026 年 5 月 29 日 · 週五</div>
 </header>
@@ -193,7 +229,7 @@
 
         <!-- 8. 美國小鎮大街 — RIGHT MIDDLE (entry side) -->
         <g class="zone" data-zone="main-street" onclick="selectZone('main-street')">
-          <rect x="460" y="258" width="128" height="115" rx="8" fill="#c0784a" opacity="0.78"/>
+          <rect x="460" y="258" width="128" height="115" rx="8" fill="#c03060" opacity="0.78"/>
           <text x="524" y="308" text-anchor="middle" fill="white" font-size="11.5" font-family="Noto Sans TC" font-weight="700">美國小鎮大街</text>
           <text x="524" y="323" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="8.5" font-family="Noto Sans TC">Main Street, U.S.A.</text>
           <!-- Entry arrow -->
@@ -237,13 +273,28 @@
   <div class="side-panel">
     <div class="side-header">
       <h2 id="panelTitle">全部設施 · 8 大園區</h2>
-      <p id="panelSub">點擊地圖上的園區可篩選 · ⭐ 為我的遊玩清單</p>
+      <p id="panelSub">點擊地圖上的園區可篩選 · ⭐ 為我的清單</p>
     </div>
-    <div class="filter-tabs">
+    <div class="mode-tabs">
+      <button class="mode-btn" id="modeAll" onclick="setMode('all')">📋 總覽</button>
+      <button class="mode-btn active" id="modeAttr" onclick="setMode('attractions')">🎢 設施 &amp; 表演</button>
+      <button class="mode-btn" id="modeDine" onclick="setMode('dining')">🍽️ 餐廳 &amp; 小吃</button>
+    </div>
+    <div class="filter-tabs" id="attractionFilters">
       <button class="tab-btn active" onclick="setFilter('all')">全部</button>
-      <button class="tab-btn" onclick="setFilter('mine')">我的清單</button>
+      <button class="tab-btn" onclick="setFilter('mine')">⭐ 我的清單</button>
       <button class="tab-btn" onclick="setFilter('show')">表演節目</button>
       <button class="tab-btn" onclick="setFilter('thrill')">刺激設施</button>
+    </div>
+    <div class="filter-tabs" id="diningFilters" style="display:none;">
+      <button class="tab-btn active" onclick="setDiningFilter('all')">全部</button>
+      <button class="tab-btn" onclick="setDiningFilter('mine')">⭐ 我的清單</button>
+      <button class="tab-btn" onclick="setDiningFilter('meal')">正餐</button>
+      <button class="tab-btn" onclick="setDiningFilter('snack')">小吃攤</button>
+    </div>
+    <div class="filter-tabs" id="overviewFilters" style="display:none;">
+      <button class="tab-btn active" onclick="setOverviewFilter('all')">全部</button>
+      <button class="tab-btn" onclick="setOverviewFilter('mine')">⭐ 我的清單</button>
     </div>
     <div class="zone-list" id="zoneList"></div>
   </div>
@@ -265,7 +316,7 @@ const ZONES = [
   { id:'adventure',   name:'探險世界',      emoji:'🌿', color:'#4a8f5f' },
   { id:'grizzly',     name:'灰熊山谷',      emoji:'⛏️', color:'#b07040' },
   { id:'tomorrow',    name:'明日世界',      emoji:'🚀', color:'#4060b0' },
-  { id:'main-street', name:'美國小鎮大街',  emoji:'🏙️', color:'#c0784a' },
+  { id:'main-street', name:'美國小鎮大街',  emoji:'🏙️', color:'#c03060' },
 ];
 
 /*
@@ -282,50 +333,50 @@ const ZONES = [
 */
 const ATTRACTIONS = [
   /* 幻想世界 — top-left */
-  { name:'迪士尼魔法書房',   zone:'fantasy', tags:['show'],   mine:true,  mx:68,  my:68  },
-  { name:'小熊維尼歷險之旅', zone:'fantasy', tags:['family'], mine:false, mx:100, my:90  },
-  { name:'小小世界',         zone:'fantasy', tags:['family'], mine:false, mx:145, my:78  },
-  { name:'小飛象旋轉世界',   zone:'fantasy', tags:['family'], mine:false, mx:62,  my:155 },
-  { name:'灰姑娘旋轉木馬',   zone:'fantasy', tags:['family'], mine:false, mx:100, my:165 },
-  { name:'瘋帽子旋轉杯',     zone:'fantasy', tags:['family'], mine:false, mx:148, my:155 },
-  { name:'米奇幻想曲',       zone:'fantasy', tags:['family'], mine:true,  mx:175, my:118 },
+  { name:'迪士尼魔法書房',   zone:'fantasy', tags:['show'],   mine:true,  mx:68,  my:68,  url:'https://www.hongkongdisneyland.com/zh-hk/entertainment/mickey-and-the-wondrous-book/' },
+  { name:'小熊維尼歷險之旅', zone:'fantasy', tags:['family'], mine:false, mx:100, my:90,  url:'https://www.hongkongdisneyland.com/zh-hk/attractions/many-adventures-of-winnie-the-pooh/' },
+  { name:'小小世界',         zone:'fantasy', tags:['family'], mine:false, mx:145, my:78,  url:'https://www.hongkongdisneyland.com/zh-hk/attractions/its-a-small-world/' },
+  { name:'小飛象旋轉世界',   zone:'fantasy', tags:['family'], mine:false, mx:62,  my:155, url:'https://www.hongkongdisneyland.com/zh-hk/attractions/dumbo-the-flying-elephant/' },
+  { name:'灰姑娘旋轉木馬',   zone:'fantasy', tags:['family'], mine:false, mx:100, my:165, url:'https://www.hongkongdisneyland.com/zh-hk/attractions/cinderella-carousel/' },
+  { name:'瘋帽子旋轉杯',     zone:'fantasy', tags:['family'], mine:false, mx:148, my:155, url:'https://www.hongkongdisneyland.com/zh-hk/attractions/mad-hatter-tea-cups/' },
+  { name:'米奇幻想曲',       zone:'fantasy', tags:['family'], mine:true,  mx:175, my:118, url:'https://www.hongkongdisneyland.com/zh-hk/attractions/mickeys-philharmagic/' },
 
   /* 魔雪奇緣世界 — left-mid */
-  { name:'魔雪奇幻之旅', zone:'frozen', tags:['family'], mine:true,  mx:62,  my:278 },
-  { name:'雪嶺滑雪橇',   zone:'frozen', tags:['thrill'], mine:true,  mx:100, my:262 },
-  { name:'森林小天地',   zone:'frozen', tags:['family'], mine:false, mx:112, my:318 },
+  { name:'魔雪奇幻之旅', zone:'frozen', tags:['family'], mine:true,  mx:62,  my:278, url:'https://www.hongkongdisneyland.com/zh-hk/attractions/frozen-ever-after/' },
+  { name:'雪嶺滑雪橇',   zone:'frozen', tags:['thrill'], mine:true,  mx:100, my:262, url:'https://www.hongkongdisneyland.com/zh-hk/attractions/wandering-oakens-sliding-sleighs/' },
+  { name:'森林小天地',   zone:'frozen', tags:['family'], mine:false, mx:112, my:318, url:'https://www.hongkongdisneyland.com/zh-hk/attractions/playhouse-in-the-woods/' },
 
   /* 反斗奇兵大本營 — bottom-left */
-  { name:'沖天遙控車',     zone:'toy-story', tags:['thrill'], mine:false, mx:68,  my:420 },
-  { name:'玩具兵團跳降傘', zone:'toy-story', tags:['thrill'], mine:false, mx:115, my:408 },
-  { name:'轉轉彈弓狗',     zone:'toy-story', tags:['family'], mine:false, mx:155, my:440 },
+  { name:'沖天遙控車',     zone:'toy-story', tags:['thrill'], mine:false, mx:68,  my:420, url:'https://www.hongkongdisneyland.com/zh-hk/attractions/rc-racer/' },
+  { name:'玩具兵團跳降傘', zone:'toy-story', tags:['thrill'], mine:false, mx:115, my:408, url:'https://www.hongkongdisneyland.com/zh-hk/attractions/toy-soldier-parachute-drop/' },
+  { name:'轉轉彈弓狗',     zone:'toy-story', tags:['family'], mine:false, mx:155, my:440, url:'https://www.hongkongdisneyland.com/zh-hk/attractions/slinky-dog-spin/' },
 
   /* 迷離莊園 — bottom-center */
-  { name:'迷離大宅', zone:'mystic', tags:['family','thrill'], mine:true,  mx:262, my:452 },
-  { name:'奇幻庭園', zone:'mystic', tags:['family'],          mine:false, mx:318, my:460 },
+  { name:'迷離大宅', zone:'mystic', tags:['family','thrill'], mine:true,  mx:262, my:452, url:'https://www.hongkongdisneyland.com/zh-hk/attractions/mystic-manor/' },
+  { name:'奇幻庭園', zone:'mystic', tags:['family'],          mine:false, mx:318, my:460, url:null },
 
   /* 探險世界 — center-right */
-  { name:'森林河流之旅',    zone:'adventure', tags:['family'], mine:true,  mx:355, my:345 },
-  { name:'泰山樹屋之木筏',  zone:'adventure', tags:['family'], mine:false, mx:395, my:325 },
-  { name:'獅子王慶典',      zone:'adventure', tags:['show'],   mine:true,  mx:368, my:388 },
-  { name:'魔海奇緣凱旋慶典',zone:'adventure', tags:['show'],   mine:false, mx:410, my:372 },
+  { name:'森林河流之旅',    zone:'adventure', tags:['family'], mine:true,  mx:355, my:345, url:'https://www.hongkongdisneyland.com/zh-hk/attractions/jungle-river-cruise/' },
+  { name:'泰山樹屋之木筏',  zone:'adventure', tags:['family'], mine:false, mx:395, my:325, url:'https://www.hongkongdisneyland.com/zh-hk/attractions/tarzan-s-treehouse/' },
+  { name:'獅子王慶典',      zone:'adventure', tags:['show'],   mine:true,  mx:368, my:388, url:'https://www.hongkongdisneyland.com/zh-hk/entertainment/festival-of-the-lion-king/' },
+  { name:'魔海奇緣凱旋慶典',zone:'adventure', tags:['show'],   mine:false, mx:410, my:372, url:null },
 
   /* 灰熊山谷 — right-lower */
-  { name:'灰熊山極速礦車', zone:'grizzly', tags:['thrill'], mine:true,  mx:495, my:385 },
-  { name:'噴泉山谷',       zone:'grizzly', tags:['family'], mine:false, mx:540, my:418 },
+  { name:'灰熊山極速礦車', zone:'grizzly', tags:['thrill'], mine:true,  mx:495, my:385, url:'https://www.hongkongdisneyland.com/zh-hk/attractions/big-grizzly-mountain-runaway-mine-cars/' },
+  { name:'噴泉山谷',       zone:'grizzly', tags:['family'], mine:false, mx:540, my:418, url:null },
 
   /* 明日世界 — top-right */
-  { name:'星戰急速穿梭',             zone:'tomorrow', tags:['thrill'], mine:true,  mx:415, my:112 },
-  { name:'鐵甲奇俠飛行之旅',         zone:'tomorrow', tags:['thrill'], mine:true,  mx:455, my:135 },
-  { name:'蟻俠與黃蜂女：擊戰特攻！', zone:'tomorrow', tags:['family'], mine:true,  mx:500, my:118 },
-  { name:'太空飛碟',                 zone:'tomorrow', tags:['family'], mine:false, mx:525, my:158 },
+  { name:'星戰急速穿梭',             zone:'tomorrow', tags:['thrill'], mine:true,  mx:415, my:112, url:'https://www.hongkongdisneyland.com/zh-hk/attractions/hyperspace-mountain/' },
+  { name:'鐵甲奇俠飛行之旅',         zone:'tomorrow', tags:['thrill'], mine:true,  mx:455, my:135, url:'https://www.hongkongdisneyland.com/zh-hk/attractions/iron-man-experience/' },
+  { name:'蟻俠與黃蜂女：擊戰特攻！', zone:'tomorrow', tags:['family'], mine:true,  mx:500, my:118, url:'https://www.hongkongdisneyland.com/zh-hk/attractions/ant-man-and-the-wasp-nano-battle/' },
+  { name:'太空飛碟',                 zone:'tomorrow', tags:['family'], mine:false, mx:525, my:158, url:'https://www.hongkongdisneyland.com/zh-hk/attractions/orbitron/' },
 
   /* 美國小鎮大街 — right-mid */
-  { name:'動畫藝術教室',     zone:'main-street', tags:['family'], mine:true,  mx:482, my:272 },
-  { name:'懷舊蒸汽火車',     zone:'main-street', tags:['family'], mine:false, mx:524, my:268 },
-  { name:'迪士尼好友巡遊派對',zone:'main-street', tags:['show'],  mine:true,  mx:490, my:300 },
-  { name:'迪士尼星夢光影之旅',zone:'main-street', tags:['show'],  mine:true,  mx:540, my:300 },
-  { name:'迪士尼魔法書房',    zone:'main-street', tags:['show'],  mine:true,  mx:515, my:330 },
+  { name:'動畫藝術教室',     zone:'main-street', tags:['family'], mine:true,  mx:482, my:272, url:'https://www.hongkongdisneyland.com/zh-hk/entertainment/animation-academy/' },
+  { name:'懷舊蒸汽火車',     zone:'main-street', tags:['family'], mine:false, mx:524, my:268, url:'https://www.hongkongdisneyland.com/zh-hk/attractions/main-street-vehicles/' },
+  { name:'迪士尼好友巡遊派對',zone:'main-street', tags:['show'],  mine:true,  mx:490, my:300, url:'https://www.hongkongdisneyland.com/zh-hk/entertainment/friendtastic-parade/' },
+  { name:'迪士尼星夢光影之旅',zone:'main-street', tags:['show'],  mine:true,  mx:540, my:300, url:'https://www.hongkongdisneyland.com/zh-hk/entertainment/momentous-party-in-the-night-sky/' },
+  { name:'迪士尼魔法書房',    zone:'main-street', tags:['show'],  mine:true,  mx:515, my:330, url:'https://www.hongkongdisneyland.com/zh-hk/entertainment/mickey-and-the-wondrous-book/' },
 ];
 
 let activeZone = null, activeFilter = 'all';
@@ -394,9 +445,9 @@ function buildList(){
     if(activeFilter==='show')   list=list.filter(a=>a.tags.includes('show'));
     if(activeFilter==='thrill') list=list.filter(a=>a.tags.includes('thrill'));
     if(activeFilter!=='all'&&list.length===0) return;
+    if(activeZone&&activeZone!==z.id) return;
     const sec=document.createElement('div');
     sec.className='zone-section'; sec.dataset.zone=z.id;
-    if(activeZone&&activeZone!==z.id) sec.classList.add('dimmed');
     const ttl=document.createElement('div');
     ttl.className='zone-title';
     ttl.innerHTML=`<span class="color-bar" style="background:${z.color}"></span><span>${z.emoji}</span>${z.name}<span class="count">${list.length} 項</span>`;
@@ -407,7 +458,8 @@ function buildList(){
       const item=document.createElement('div');
       item.className='attraction-item'+(a.mine?' mine-item':'');
       const tagsHtml=a.tags.map(tg=>`<span class="tag ${tg}">${lbl[tg]||tg}</span>`).join('');
-      item.innerHTML=`<span class="item-dot" style="background:${z.color}"></span><span class="item-name">${a.name}</span><div class="item-tags">${tagsHtml}</div>${a.mine?'<span class="star">⭐</span>':''}`;
+      const linkHtml = a.url ? `<a class="item-link" href="${a.url}" target="_blank" title="官網介紹" onclick="event.stopPropagation()">🔗</a>` : `<span style="width:20px;flex-shrink:0;"></span>`;
+      item.innerHTML=`<span class="item-dot" style="background:${z.color}"></span><span class="item-name">${a.name}</span><div class="item-tags">${tagsHtml}</div>${a.mine?'<span class="star">⭐</span>':''}${linkHtml}`;
       item.onclick=()=>selectZone(z.id);
       ul.appendChild(item);
     });
@@ -433,9 +485,10 @@ function selectZone(id){
     dot.classList.toggle('dimmed',!!(activeZone&&activeZone!==dot.dataset.zone));
   });
   const h=document.getElementById('panelTitle'), s=document.getElementById('panelSub');
-  if(activeZone){ const z=getZone(activeZone); h.textContent=`${z.emoji} ${z.name}`; s.textContent='點擊空白處返回全部 · ⭐ 為我的遊玩清單'; }
-  else { h.textContent='全部設施 · 8 大園區'; s.textContent='點擊地圖上的園區可篩選 · ⭐ 為我的遊玩清單'; }
-  buildList();
+  if(activeZone){ const z=getZone(activeZone); h.textContent=`${z.emoji} ${z.name}`; s.textContent='點擊空白處返回全部 · ⭐ 為我的清單'; }
+  else { h.textContent = activeMode==='dining'?'餐廳 & 小吃 · 8 大園區':'全部設施 · 8 大園區'; s.textContent='點擊地圖上的園區可篩選 · ⭐ 為我的清單'; }
+  updatePanelTitle();
+  if(activeMode==='all') buildOverviewList(); else if(activeMode==='dining') buildDiningList(); else buildList();
 }
 
 /* Filter */
@@ -453,6 +506,211 @@ function updateStats(){
 
 /* BG click deselect */
 document.getElementById('mapSvg').addEventListener('click',e=>{ if(e.target.closest('.zone')||e.target.closest('.map-dot')) return; selectZone(null); });
+
+
+/* ══════════════════════════════
+   DINING DATA
+══════════════════════════════ */
+const DINING = [
+  /* 美國小鎮大街 */
+  { name:'Plaza Inn 翠苑',                zone:'main-street', type:'meal',  mine:false, food:null,            page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/plaza-inn/',              menu:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/plaza-inn/#/menu' },
+  { name:'Main Street Corner Cafe 大街轉角咖啡廳', zone:'main-street', type:'meal', mine:false, food:null,   page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/main-street-corner-cafe/', menu:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/main-street-corner-cafe/#/menu' },
+  { name:'Main Street Market 大街小市集',  zone:'main-street', type:'snack', mine:false, food:null,            page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/main-street-market/',      menu:null },
+  { name:'Main Street Bakery 大街餅店',    zone:'main-street', type:'snack', mine:false, food:null,            page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/main-street-bakery/',      menu:null },
+  { name:'Market House Bakery 市集餅店',   zone:'main-street', type:'snack', mine:false, food:null,            page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/market-house-bakery/',     menu:null },
+  { name:'Midtown Delights 小鎮冰淇淋店', zone:'main-street', type:'snack', mine:true,  food:'指定軟冰淇淋',  page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/midtown-delights/',          menu:null },
+  { name:'Main Street U.S.A. Popcorn & Frozen Lollipops Cart', zone:'main-street', type:'snack', mine:false, food:null, page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/popcorn-cotton-candy-frozen-lollipops-cart-main-street-usa/', menu:null },
+
+  /* 幻想世界 */
+  { name:'Royal Banquet Hall 皇室宴會廳',          zone:'fantasy', type:'meal',  mine:true,  food:'烤雞套餐（半隻）',    page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/royal-banquet-hall/',        menu:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/royal-banquet-hall/#/menu' },
+  { name:"Clopin's Festival of Foods 笑匠歡宴坊",  zone:'fantasy', type:'meal',  mine:true,  food:'菠蘿海鮮肉鬆炒飯',    page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/clopins-festival-of-foods/', menu:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/clopins-festival-of-foods/#/menu' },
+  { name:'Fantasyland Popcorn & Frozen Lollipops Cart', zone:'fantasy', type:'snack', mine:false, food:null,  page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/popcorn-cotton-candy-frozen-lollipops-cart-fantasyland/', menu:null },
+  { name:'Small World Ice Cream 小小世界雪糕',     zone:'fantasy', type:'snack', mine:false, food:null,        page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/small-world-ice-cream/',    menu:null },
+
+  /* 探險世界 */
+  { name:"Wayfinders' Table 領航者薈館", zone:'adventure', type:'meal',  mine:true,  food:'烤雞腿配嫲嫲特色香飯', page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/wayfinders-table/',       menu:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/wayfinders-table/#/menu' },
+  { name:'Tahitian Terrace 大溪地露天餐廳',        zone:'adventure', type:'meal',  mine:false, food:null,      page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/tahitian-terrace/',       menu:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/tahitian-terrace/#/menu' },
+  { name:'River View Cafe 河畔咖啡廳',             zone:'adventure', type:'meal',  mine:false, food:null,      page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/river-view-cafe/',        menu:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/river-view-cafe/#/menu' },
+  { name:'Karibuni Marketplace 卡里布尼市集',      zone:'adventure', type:'snack', mine:false, food:null,      page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/karibuni-marketplace/',   menu:null },
+  { name:'Adventureland Frozen Lollipops Cart',   zone:'adventure', type:'snack', mine:false, food:null,      page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/popcorn-cotton-candy-frozen-lollipops-cart-adventureland/', menu:null },
+
+  /* 迷離莊園 */
+  { name:"Explorer's Club Restaurant 探險家俱樂部餐廳", zone:'mystic', type:'meal', mine:false, food:null,    page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/explorers-club-restaurant/', menu:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/explorers-club-restaurant/#/menu' },
+  { name:'Mystic Point Frozen Lollipops Cart',    zone:'mystic', type:'snack', mine:false, food:null,         page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/popcorn-cotton-candy-frozen-lollipops-cart-mystic-point/', menu:null },
+
+  /* 灰熊山谷 */
+  { name:'Lucky Nugget Saloon 幸運金塊沙龍',      zone:'grizzly', type:'snack', mine:false, food:null,        page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/lucky-nugget-saloon/',     menu:null },
+
+  /* 魔雪奇緣世界 */
+  { name:'Golden Crocus Inn 阿德爾港畔餐廳',      zone:'frozen',  type:'meal',  mine:true,  food:'掌櫃秘製羊膝', page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/golden-crocus-inn/',     menu:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/golden-crocus-inn/#/menu' },
+  { name:'Northern Delights 北地美食',            zone:'frozen',  type:'snack', mine:false, food:null,        page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/northern-delights/',      menu:null },
+
+  /* 反斗奇兵大本營 */
+  { name:"Jessie's Snack Roundup 翠絲小食車",     zone:'toy-story', type:'snack', mine:true, food:'轉轉彈弓狗薄餅 / 勞蘇窩夫三明治', page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/jessies-snack-roundup/', menu:null },
+
+  /* 明日世界 */
+  { name:'Starliner Diner 火箭餐廳',              zone:'tomorrow', type:'meal',  mine:true,  food:'Marvel 隊長牛肉漢堡套餐', page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/starliner-diner/',    menu:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/starliner-diner/#/menu' },
+  { name:'Comet Cafe 彗星餐廳',                   zone:'tomorrow', type:'meal',  mine:true,  food:'日式牛肉滑蛋飯套餐',      page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/comet-cafe/',          menu:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/comet-cafe/#/menu' },
+  { name:'NRG POD 明日小食站',                    zone:'tomorrow', type:'snack', mine:false, food:null,        page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/nrg-pod/',                menu:null },
+  { name:'Tomorrowland Frozen Lollipops Cart',    zone:'tomorrow', type:'snack', mine:false, food:null,        page:'https://www.hongkongdisneyland.com/zh-hk/dining/hong-kong-disneyland-park/popcorn-cotton-candy-frozen-lollipops-cart-tomorrowland/', menu:null },
+];
+
+let activeMode = 'attractions';
+let activeDiningFilter = 'all';
+
+/* Mode switcher */
+let activeOverviewFilter = 'all';
+
+function updatePanelTitle() {
+  const h=document.getElementById('panelTitle');
+  const s=document.getElementById('panelSub');
+  const zLabel = activeZone ? (getZone(activeZone).emoji+' '+getZone(activeZone).name) : null;
+  if(activeMode==='all')         h.textContent = zLabel ? zLabel+' · 總覽' : '總覽 · 8 大園區';
+  else if(activeMode==='dining') h.textContent = zLabel ? zLabel+' · 餐廳' : '餐廳 & 小吃 · 8 大園區';
+  else                           h.textContent = zLabel ? zLabel : '全部設施 · 8 大園區';
+  s.textContent = '點擊地圖上的園區可篩選 · ⭐ 為我的清單';
+}
+
+function setMode(mode) {
+  activeMode = mode;
+  document.getElementById('modeAll').classList.toggle('active',  mode==='all');
+  document.getElementById('modeAttr').classList.toggle('active', mode==='attractions');
+  document.getElementById('modeDine').classList.toggle('active', mode==='dining');
+  document.getElementById('overviewFilters').style.display   = mode==='all'         ? 'flex' : 'none';
+  document.getElementById('attractionFilters').style.display = mode==='attractions' ? 'flex' : 'none';
+  document.getElementById('diningFilters').style.display     = mode==='dining'      ? 'flex' : 'none';
+  updatePanelTitle();
+  if(mode==='all')         buildOverviewList();
+  else if(mode==='dining') buildDiningList();
+  else                     buildList();
+}
+
+/* Overview filter */
+function setOverviewFilter(f) {
+  activeOverviewFilter = f;
+  document.querySelectorAll('#overviewFilters .tab-btn').forEach((b,i)=>b.classList.toggle('active',['all','mine'][i]===f));
+  buildOverviewList();
+}
+
+/* Build overview list — attractions + dining merged per zone */
+function buildOverviewList() {
+  const c=document.getElementById('zoneList'); c.innerHTML='';
+  const lbl={show:'節目',thrill:'刺激',family:'親子'};
+  const typeLabel={meal:'正餐',snack:'小吃攤'};
+
+  ZONES.forEach(z=>{
+    if(activeZone && activeZone!==z.id) return;
+
+    let attrs  = ATTRACTIONS.filter(a=>a.zone===z.id);
+    let diners = DINING.filter(d=>d.zone===z.id);
+    if(activeOverviewFilter==='mine'){
+      attrs  = attrs.filter(a=>a.mine);
+      diners = diners.filter(d=>d.mine);
+    }
+    if(attrs.length===0 && diners.length===0) return;
+
+    const sec=document.createElement('div');
+    sec.className='zone-section'; sec.dataset.zone=z.id;
+
+    const ttl=document.createElement('div');
+    ttl.className='zone-title';
+    const total = attrs.length + diners.length;
+    ttl.innerHTML=`<span class="color-bar" style="background:${z.color}"></span><span>${z.emoji}</span>${z.name}<span class="count">${total} 項</span>`;
+    ttl.onclick=()=>selectZone(activeZone===z.id?null:z.id);
+    sec.appendChild(ttl);
+
+    const ul=document.createElement('div'); ul.className='attraction-list';
+
+    // Attractions sub-header (if any)
+    if(attrs.length>0){
+      const subhdr=document.createElement('div');
+      subhdr.style.cssText='font-size:9px;letter-spacing:1.5px;color:rgba(255,255,255,0.28);padding:4px 9px 2px;text-transform:uppercase;';
+      subhdr.textContent='設施 & 表演';
+      ul.appendChild(subhdr);
+      attrs.forEach(a=>{
+        const item=document.createElement('div');
+        item.className='attraction-item'+(a.mine?' mine-item':'');
+        const tagsHtml=a.tags.map(tg=>`<span class="tag ${tg}">${lbl[tg]||tg}</span>`).join('');
+        const linkHtml=a.url?`<a class="item-link" href="${a.url}" target="_blank" title="官網介紹" onclick="event.stopPropagation()">🔗</a>`:`<span style="width:20px;flex-shrink:0;"></span>`;
+        item.innerHTML=`<span class="item-dot" style="background:${z.color}"></span><span class="item-name">${a.name}</span><div class="item-tags">${tagsHtml}</div>${a.mine?'<span class="star">⭐</span>':''}${linkHtml}`;
+        item.onclick=()=>selectZone(z.id);
+        ul.appendChild(item);
+      });
+    }
+
+    // Dining sub-header (if any)
+    if(diners.length>0){
+      const subhdr=document.createElement('div');
+      subhdr.style.cssText='font-size:9px;letter-spacing:1.5px;color:rgba(255,255,255,0.28);padding:6px 9px 2px;text-transform:uppercase;';
+      subhdr.textContent='餐廳 & 小吃';
+      ul.appendChild(subhdr);
+      diners.forEach(d=>{
+        const item=document.createElement('div');
+        item.className='dining-item'+(d.mine?' dining-mine':'');
+        const pageLink=`<a class="dining-link page" href="${d.page}" target="_blank" title="官網介紹" onclick="event.stopPropagation()">🔗</a>`;
+        const menuLink=d.menu?`<a class="dining-link menu-link" href="${d.menu}" target="_blank" title="查看菜單" onclick="event.stopPropagation()">📋</a>`:'';
+        const foodLine=d.food
+          ?`<div class="dining-row2"><span class="dining-food">🍴 ${d.food}</span><div class="dining-links">${pageLink}${menuLink}</div></div>`
+          :`<div class="dining-row2"><span class="dining-food"></span><div class="dining-links">${pageLink}${menuLink}</div></div>`;
+        item.innerHTML=`<div class="dining-row1"><span class="item-dot" style="background:${z.color}"></span><span class="dining-name">${d.name}</span><span class="dining-type ${d.type}">${typeLabel[d.type]}</span>${d.mine?'<span class="star">⭐</span>':''}</div>${foodLine}`;
+        ul.appendChild(item);
+      });
+    }
+
+    sec.appendChild(ul); c.appendChild(sec);
+  });
+}
+
+/* Dining filter */
+function setDiningFilter(f) {
+  activeDiningFilter = f;
+  document.querySelectorAll('#diningFilters .tab-btn').forEach((b,i)=>b.classList.toggle('active',['all','mine','meal','snack'][i]===f));
+  buildDiningList();
+}
+
+/* Build dining list */
+function buildDiningList() {
+  const c=document.getElementById('zoneList'); c.innerHTML='';
+  const typeLabel = { meal:'正餐', snack:'小吃攤' };
+  ZONES.forEach(z=>{
+    let list = DINING.filter(d=>d.zone===z.id);
+    if(activeDiningFilter==='mine')  list=list.filter(d=>d.mine);
+    if(activeDiningFilter==='meal')  list=list.filter(d=>d.type==='meal');
+    if(activeDiningFilter==='snack') list=list.filter(d=>d.type==='snack');
+    if(activeZone && activeZone!==z.id) return;
+    if(list.length===0) return;
+
+    const sec=document.createElement('div');
+    sec.className='zone-section'; sec.dataset.zone=z.id;
+
+    const ttl=document.createElement('div');
+    ttl.className='zone-title';
+    ttl.innerHTML=`<span class="color-bar" style="background:${z.color}"></span><span>${z.emoji}</span>${z.name}<span class="count">${list.length} 處</span>`;
+    ttl.onclick=()=>selectZone(activeZone===z.id?null:z.id);
+    sec.appendChild(ttl);
+
+    const ul=document.createElement('div'); ul.className='attraction-list';
+    list.forEach(d=>{
+      const item=document.createElement('div');
+      item.className='dining-item'+(d.mine?' dining-mine':'');
+
+      const pageLink = `<a class="dining-link page" href="${d.page}" target="_blank" title="官網介紹" onclick="event.stopPropagation()">🔗</a>`;
+      const menuLink = d.menu ? `<a class="dining-link menu-link" href="${d.menu}" target="_blank" title="查看菜單" onclick="event.stopPropagation()">📋</a>` : '';
+      const foodLine = d.food ? `<div class="dining-row2"><span class="dining-food">🍴 ${d.food}</span><div class="dining-links">${pageLink}${menuLink}</div></div>` : `<div class="dining-row2"><span class="dining-food"></span><div class="dining-links">${pageLink}${menuLink}</div></div>`;
+
+      item.innerHTML=`
+        <div class="dining-row1">
+          <span class="item-dot" style="background:${z.color}"></span>
+          <span class="dining-name">${d.name}</span>
+          <span class="dining-type ${d.type}">${typeLabel[d.type]}</span>
+          ${d.mine?'<span class="star">⭐</span>':''}
+        </div>
+        ${foodLine}`;
+      ul.appendChild(item);
+    });
+    sec.appendChild(ul); c.appendChild(sec);
+  });
+}
 
 buildLegend(); buildDots(); buildList(); updateStats();
 </script>
