@@ -1,178 +1,1353 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>港澳四日遊行程</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        body { font-family: "Microsoft JhengHei", sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: #f4f7f6; }
-        
-        /* 標題列 */
-        header { padding: 8px 15px; background: #2c3e50; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        header h1 { margin: 0; font-size: 1.1rem; line-height: 1.2; font-weight: bold; }
-        
-        /* 地圖區域 */
-        #map { height: 40%; width: 100%; z-index: 1; border-bottom: 2px solid #ddd; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>港澳四日遊 · 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Noto+Serif+TC:wght@300;400;600&family=Noto+Sans+TC:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --gold:#C9A84C;
+  --gold-dim:#8a6e2f;
+  --gold-light:#e8c97a;
+  --navy:#0a0e1a;
+  --navy-mid:#111827;
+  --navy-card:#161d2e;
+  --navy-border:#1e2a42;
+  --white:#f5f3ee;
+  --white-dim:rgba(245,243,238,0.55);
+  --white-faint:rgba(245,243,238,0.18);
+  --day1:#c0392b;
+  --day2:#b8860b;
+  --day3:#2e7d5a;
+  --day4:#1a5276;
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--navy);
+  color:var(--white);
+  font-family:'Noto Sans TC',sans-serif;
+  font-weight:300;
+  overflow-x:hidden;
+  line-height:1.7;
+}
 
-        /* 清單區域 */
-        #list-container { height: 60%; overflow-y: auto; background: #fff; }
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--gold-dim);border-radius:2px}
 
-        .day-section { background: #34495e; padding: 8px 20px; font-weight: bold; position: sticky; top: 0; z-index: 2; color: #fff; letter-spacing: 1px; }
-        
-        .list-item { padding: 15px 20px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; align-items: flex-start; transition: 0.2s; }
-        .list-item:hover { background: #f0f7ff; }
-        
-        .num-tag { 
-            color: white; border-radius: 50%; width: 32px; height: 32px; 
-            display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 0.7rem; font-weight: bold; flex-shrink: 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
+/* ─── NAV ─── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:999;
+  padding:0 32px;height:58px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(10,14,26,0.75);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(201,168,76,0.12);
+  transition:background 0.4s;
+}
+.nav-logo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.1rem;font-weight:400;letter-spacing:0.12em;
+  color:var(--gold);text-decoration:none;
+}
+.nav-links{display:flex;gap:6px;align-items:center}
+.nav-links a{
+  font-size:0.72rem;letter-spacing:0.1em;
+  color:var(--white-dim);text-decoration:none;
+  padding:6px 12px;border-radius:20px;
+  border:1px solid transparent;
+  transition:all 0.25s;white-space:nowrap;
+}
+.nav-links a:hover,.nav-links a.active{
+  color:var(--gold);border-color:rgba(201,168,76,0.35);
+  background:rgba(201,168,76,0.07);
+}
+.nav-links a.nav-links-btn{
+  background:rgba(201,168,76,0.12);
+  border-color:rgba(201,168,76,0.3);
+  color:var(--gold);
+}
 
-        /* 天數顏色 */
-        .bg-day1 { background-color: #ff5252; } 
-        .bg-day2 { background-color: #ffc107; color: #333; } 
-        .bg-day3 { background-color: #4caf50; } 
-        .bg-day4 { background-color: #2196f3; } 
+/* ─── HERO ─── */
+#hero{
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  justify-content:flex-end;
+  padding:0 0 80px;
+  position:relative;overflow:hidden;
+}
+.hero-bg{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 60% 30%, rgba(201,168,76,0.06) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 80% at 10% 80%, rgba(26,82,118,0.15) 0%, transparent 60%),
+    linear-gradient(175deg, #0a0e1a 0%, #0d1525 40%, #0a0e1a 100%);
+}
+.hero-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(201,168,76,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201,168,76,0.03) 1px, transparent 1px);
+  background-size:60px 60px;
+  mask-image:linear-gradient(to bottom, transparent, rgba(0,0,0,0.4) 30%, rgba(0,0,0,0.4) 70%, transparent);
+}
+.hero-content{
+  position:relative;z-index:2;
+  max-width:900px;margin:0 auto;padding:0 40px;width:100%;
+}
+.hero-eyebrow{
+  font-family:'DM Mono',monospace;
+  font-size:0.7rem;letter-spacing:0.25em;
+  color:var(--gold);text-transform:uppercase;
+  margin-bottom:28px;
+  display:flex;align-items:center;gap:14px;
+}
+.hero-eyebrow::before{
+  content:'';display:block;width:32px;height:1px;background:var(--gold);
+}
+.hero-h1{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(3.5rem,10vw,7.5rem);
+  font-weight:300;line-height:0.92;
+  letter-spacing:-0.01em;
+  margin-bottom:10px;
+}
+.hero-h1 em{font-style:italic;color:var(--gold)}
+.hero-sub{
+  font-family:'Noto Serif TC',serif;
+  font-size:clamp(1rem,2.5vw,1.3rem);
+  font-weight:300;color:var(--white-dim);
+  margin-bottom:36px;letter-spacing:0.05em;
+}
+.hero-tagline{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(0.95rem,2vw,1.15rem);
+  font-style:italic;font-weight:300;
+  color:rgba(201,168,76,0.7);
+  margin-bottom:56px;letter-spacing:0.04em;
+}
+.hero-stats{
+  display:flex;gap:48px;
+  padding-top:40px;
+  border-top:1px solid var(--navy-border);
+}
+.stat-item{}
+.stat-num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:2.8rem;font-weight:300;
+  color:var(--gold);line-height:1;
+}
+.stat-label{
+  font-size:0.7rem;letter-spacing:0.15em;
+  color:var(--white-dim);margin-top:4px;
+  text-transform:uppercase;
+}
+.scroll-hint{
+  position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  font-family:'DM Mono',monospace;font-size:0.65rem;
+  letter-spacing:0.2em;color:var(--white-dim);
+}
+.scroll-line{
+  width:1px;height:48px;
+  background:linear-gradient(to bottom, var(--gold), transparent);
+  animation:scrollpulse 2s ease-in-out infinite;
+}
+@keyframes scrollpulse{0%,100%{opacity:0.3;transform:scaleY(0.8)}50%{opacity:1;transform:scaleY(1)}}
 
-        .item-info { width: 100%; }
-        .item-info h3 { margin: 0 0 5px 0; font-size: 1.1rem; color: #2c3e50; }
-        
-        .detail-row { font-size: 0.85rem; color: #555; margin-bottom: 3px; display: flex; align-items: flex-start; }
-        .detail-row b { color: #34495e; margin-right: 5px; white-space: nowrap; }
-        .icon-text { margin-right: 8px; }
+/* ─── SECTION WRAPPER ─── */
+.section-wrap{max-width:900px;margin:0 auto;padding:0 40px}
 
-        .remark-box { background: #f8f9fa; padding: 8px; border-radius: 4px; margin-top: 5px; border-left: 3px solid #ccc; font-size: 0.8rem; line-height: 1.4; color: #666; white-space: pre-wrap; }
-    </style>
+/* ─── DAY CHAPTER ─── */
+.day-chapter{padding:100px 0 60px;position:relative}
+.chapter-num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(6rem,18vw,13rem);
+  font-weight:300;line-height:1;
+  position:absolute;top:60px;right:-20px;
+  color:rgba(255,255,255,0.025);
+  pointer-events:none;user-select:none;
+  letter-spacing:-0.05em;
+}
+.chapter-label{
+  font-family:'DM Mono',monospace;
+  font-size:0.65rem;letter-spacing:0.3em;color:var(--gold);
+  text-transform:uppercase;margin-bottom:16px;
+  display:flex;align-items:center;gap:12px;
+}
+.chapter-label span{width:24px;height:1px;background:var(--gold);display:block}
+.chapter-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2rem,6vw,3.5rem);font-weight:300;
+  line-height:1.1;margin-bottom:10px;
+  letter-spacing:0.01em;
+}
+.chapter-title em{font-style:italic;color:var(--gold)}
+.chapter-date{
+  font-size:0.78rem;letter-spacing:0.12em;
+  color:var(--white-dim);margin-bottom:48px;
+}
+
+/* ─── TIMELINE ─── */
+.timeline{position:relative;padding-left:32px}
+.timeline::before{
+  content:'';position:absolute;left:0;top:8px;bottom:8px;
+  width:1px;background:linear-gradient(to bottom, var(--gold) 0%, var(--navy-border) 100%);
+}
+.tl-item{
+  position:relative;margin-bottom:12px;
+  opacity:0;transform:translateY(24px);
+  transition:opacity 0.6s ease, transform 0.6s ease;
+}
+.tl-item.visible{opacity:1;transform:translateY(0)}
+.tl-dot{
+  position:absolute;left:-36px;top:18px;
+  width:8px;height:8px;border-radius:50%;
+  border:1px solid var(--gold);
+  background:var(--navy);
+  transition:background 0.3s;
+}
+.tl-item:hover .tl-dot{background:var(--gold)}
+
+/* ─── SPOT CARD ─── */
+.spot-card{
+  background:var(--navy-card);
+  border:1px solid var(--navy-border);
+  border-radius:12px;
+  overflow:hidden;
+  transition:border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+  cursor:default;
+}
+.spot-card:hover{
+  border-color:rgba(201,168,76,0.3);
+  transform:translateY(-2px);
+  box-shadow:0 12px 40px rgba(0,0,0,0.4);
+}
+.card-body{padding:22px 24px 20px}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:12px}
+.card-meta-left{}
+.card-time{
+  font-family:'DM Mono',monospace;
+  font-size:0.68rem;letter-spacing:0.1em;
+  color:var(--gold);margin-bottom:6px;
+}
+.card-name{
+  font-family:'Noto Serif TC',serif;
+  font-size:1.05rem;font-weight:600;
+  color:var(--white);line-height:1.3;
+}
+.card-map-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:'DM Mono',monospace;font-size:0.62rem;
+  letter-spacing:0.08em;color:var(--gold-dim);
+  text-decoration:none;
+  border:1px solid rgba(201,168,76,0.2);
+  padding:6px 10px;border-radius:6px;
+  transition:all 0.2s;white-space:nowrap;flex-shrink:0;
+  margin-top:2px;
+}
+.card-map-btn:hover{
+  color:var(--gold);border-color:rgba(201,168,76,0.5);
+  background:rgba(201,168,76,0.08);
+}
+.card-divider{height:1px;background:var(--navy-border);margin:14px 0}
+.card-eat{
+  display:flex;align-items:flex-start;gap:8px;
+  font-size:0.82rem;color:var(--white-dim);margin-bottom:10px;
+}
+.card-eat-icon{color:var(--gold);flex-shrink:0;margin-top:1px}
+.card-remark{
+  font-size:0.78rem;color:var(--white-dim);
+  line-height:1.65;white-space:pre-wrap;
+  padding:10px 14px;
+  background:rgba(255,255,255,0.03);
+  border-left:2px solid rgba(201,168,76,0.3);
+  border-radius:0 6px 6px 0;
+}
+.card-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.tag{
+  font-family:'DM Mono',monospace;font-size:0.6rem;
+  letter-spacing:0.08em;padding:3px 8px;border-radius:20px;
+  border:1px solid var(--navy-border);color:var(--white-dim);
+}
+.tag.gold{border-color:rgba(201,168,76,0.3);color:rgba(201,168,76,0.8)}
+.tag.optional{border-color:rgba(255,255,255,0.1);font-style:italic}
+
+/* ─── FLIGHT CARD ─── */
+.flight-card{
+  background:linear-gradient(135deg, rgba(201,168,76,0.08), rgba(201,168,76,0.03));
+  border:1px solid rgba(201,168,76,0.25);
+  border-radius:12px;padding:24px 28px;margin-bottom:16px;
+}
+.flight-row{display:flex;align-items:center;gap:0;margin-bottom:8px}
+.flight-airport{text-align:center;flex:1}
+.flight-code{
+  font-family:'Cormorant Garamond',serif;
+  font-size:2.2rem;font-weight:300;color:var(--gold);line-height:1;
+}
+.flight-city{font-size:0.7rem;color:var(--white-dim);letter-spacing:0.1em;margin-top:3px}
+.flight-arrow{
+  flex:2;display:flex;flex-direction:column;align-items:center;
+  gap:4px;padding:0 16px;
+}
+.flight-line{
+  width:100%;height:1px;
+  background:linear-gradient(to right, var(--gold), rgba(201,168,76,0.3));
+  position:relative;
+}
+.flight-line::after{
+  content:'▶';position:absolute;right:-5px;top:50%;
+  transform:translateY(-50%);font-size:7px;color:var(--gold);
+}
+.flight-num{
+  font-family:'DM Mono',monospace;font-size:0.68rem;
+  color:var(--gold);letter-spacing:0.08em;
+}
+.flight-duration{font-size:0.68rem;color:var(--white-dim);letter-spacing:0.05em}
+.flight-times{
+  display:flex;justify-content:space-between;
+  font-family:'DM Mono',monospace;font-size:0.75rem;
+  color:var(--white-dim);margin-top:6px;
+}
+.flight-terminal{
+  font-size:0.68rem;color:rgba(201,168,76,0.6);
+  text-align:center;margin-top:4px;
+}
+.flight-note{
+  margin-top:14px;padding-top:14px;
+  border-top:1px solid rgba(201,168,76,0.15);
+  font-size:0.75rem;color:var(--white-dim);
+  display:flex;align-items:center;gap:8px;
+}
+
+/* ─── SECTION DIVIDER ─── */
+.section-divider{
+  max-width:900px;margin:0 auto;padding:0 40px;
+}
+.divider-line{
+  height:1px;
+  background:linear-gradient(to right, transparent, var(--navy-border), transparent);
+  margin:20px 0;
+}
+
+/* ─── LINKS SECTION ─── */
+#links{padding:80px 0 40px}
+.links-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.8rem,5vw,2.8rem);font-weight:300;
+  margin-bottom:8px;
+}
+.links-title em{font-style:italic;color:var(--gold)}
+.links-sub{font-size:0.8rem;color:var(--white-dim);letter-spacing:0.1em;margin-bottom:44px}
+.links-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.link-card{
+  display:flex;flex-direction:column;
+  background:var(--navy-card);
+  border:1px solid var(--navy-border);
+  border-radius:10px;padding:20px 22px;
+  text-decoration:none;
+  transition:all 0.25s;
+  gap:6px;
+}
+.link-card:hover{
+  border-color:rgba(201,168,76,0.35);
+  background:rgba(201,168,76,0.05);
+  transform:translateY(-2px);
+}
+.link-type{
+  font-family:'DM Mono',monospace;font-size:0.6rem;
+  letter-spacing:0.15em;color:var(--gold-dim);text-transform:uppercase;
+}
+.link-name{
+  font-family:'Noto Serif TC',serif;
+  font-size:0.95rem;color:var(--white);margin-top:2px;
+}
+.link-desc{font-size:0.75rem;color:var(--white-dim);line-height:1.5}
+.link-url{
+  font-family:'DM Mono',monospace;font-size:0.62rem;
+  color:var(--gold-dim);margin-top:6px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.link-arrow{
+  align-self:flex-end;margin-top:auto;padding-top:10px;
+  font-size:0.65rem;letter-spacing:0.1em;color:var(--gold);
+}
+
+/* ─── FOOTER ─── */
+footer{
+  padding:100px 40px 60px;
+  text-align:center;
+  border-top:1px solid var(--navy-border);
+  position:relative;overflow:hidden;
+}
+.footer-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 60% at 50% 0%, rgba(201,168,76,0.04), transparent);
+  pointer-events:none;
+}
+.footer-eyebrow{
+  font-family:'DM Mono',monospace;font-size:0.65rem;
+  letter-spacing:0.25em;color:var(--gold-dim);
+  text-transform:uppercase;margin-bottom:28px;
+}
+.footer-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2rem,7vw,4.5rem);
+  font-weight:300;font-style:italic;
+  color:var(--white);line-height:1.1;margin-bottom:20px;
+}
+.footer-quote{
+  font-family:'Noto Serif TC',serif;
+  font-size:0.95rem;font-weight:300;
+  color:var(--white-dim);max-width:480px;margin:0 auto 48px;
+  line-height:1.8;
+}
+.footer-meta{
+  font-family:'DM Mono',monospace;font-size:0.65rem;
+  letter-spacing:0.15em;color:rgba(245,243,238,0.2);
+}
+
+/* ─── REVEAL ANIMATION ─── */
+.reveal{opacity:0;transform:translateY(32px);transition:opacity 0.7s ease,transform 0.7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-delay-1{transition-delay:0.1s}
+.reveal-delay-2{transition-delay:0.2s}
+.reveal-delay-3{transition-delay:0.3s}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:680px){
+  nav{padding:0 20px}
+  .nav-links a{font-size:0.65rem;padding:5px 8px}
+  .section-wrap,.section-divider{padding:0 20px}
+  .hero-content{padding:0 24px}
+  .hero-stats{gap:28px}
+  .stat-num{font-size:2rem}
+  .chapter-num{display:none}
+  .flight-code{font-size:1.6rem}
+  footer{padding:80px 24px 48px}
+}
+</style>
 </head>
 <body>
 
-    <header><h1>📍 港澳四日遊行程 (2026/05/28 ~ 05/31)</h1></header>
+<!-- NAV -->
+<nav id="main-nav">
+  <a href="#hero" class="nav-logo">HK · MAC · 2026</a>
+  <div class="nav-links">
+    <a href="#day1" class="nav-day">Day 1</a>
+    <a href="#day2" class="nav-day">Day 2</a>
+    <a href="#day3" class="nav-day">Day 3</a>
+    <a href="#day4" class="nav-day">Day 4</a>
+    <a href="#links" class="nav-links-btn">資源連結</a>
+  </div>
+</nav>
 
-    <div id="map"></div>
-    <div id="list-container"></div>
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Travel Itinerary · May 28–31, 2026</p>
+    <h1 class="hero-h1">香港<br><em>&</em> 澳門</h1>
+    <p class="hero-sub">Hong Kong · Macau · Four Days</p>
+    <p class="hero-tagline">"Not a trip. A chapter you'll carry home."</p>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <div class="stat-num">4</div>
+        <div class="stat-label">Days</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">2</div>
+        <div class="stat-label">Cities</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">30+</div>
+        <div class="stat-label">Stops</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">∞</div>
+        <div class="stat-label">Memories</div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        var map = L.map('map').setView([22.30, 114.15], 11);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+<!-- ══════════════════════════════════════
+     DAY 1
+══════════════════════════════════════ -->
+<section id="day1">
+<div class="section-wrap">
+<div class="day-chapter">
+  <div class="chapter-num">01</div>
+  <div class="chapter-label reveal"><span></span>Day One · Hong Kong</div>
+  <h2 class="chapter-title reveal reveal-delay-1">九龍的<em>光與色</em></h2>
+  <p class="chapter-date reveal reveal-delay-2">May 28, 2026（Thu）· 香港市區</p>
 
-        function createIcon(color) {
-            return new L.Icon({
-                iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
-            });
-        }
+  <!-- Flight In -->
+  <div class="reveal reveal-delay-2" style="margin-bottom:40px">
+    <div class="flight-card">
+      <div class="flight-row">
+        <div class="flight-airport">
+          <div class="flight-code">TPE</div>
+          <div class="flight-city">台北桃園</div>
+        </div>
+        <div class="flight-arrow">
+          <div class="flight-num">JX 233 · STARLUX</div>
+          <div class="flight-line"></div>
+          <div class="flight-duration">約 1 小時 55 分鐘</div>
+        </div>
+        <div class="flight-airport">
+          <div class="flight-code">HKG</div>
+          <div class="flight-city">香港赤鱲角</div>
+        </div>
+      </div>
+      <div class="flight-times">
+        <span>08:00 出發</span>
+        <span>09:55 抵達</span>
+      </div>
+      <div class="flight-terminal">出發 T1 ·  抵達 T1</div>
+      <div class="flight-note">✦ 站務人工櫃台購買團體票 · 機場快綫 / 東涌綫 · 機場 → 青衣 → 奧運（約 45 分鐘）</div>
+    </div>
+  </div>
 
-        const configs = {
-            "Day 1": { marker: createIcon('red'), cssClass: 'bg-day1' },
-            "Day 2": { marker: createIcon('gold'), cssClass: 'bg-day2' },
-            "Day 3": { marker: createIcon('green'), cssClass: 'bg-day3' },
-            "Day 4": { marker: createIcon('blue'), cssClass: 'bg-day4' }
-        };
+  <div class="timeline">
 
-        // 整理自你的 Google 試算表資料
-        var itinerary = [
-            // Day 1
-            { day: "Day 1", id: "1-1", name: "香港機場 (抵達)", lat: 22.3080, lng: 113.9185, time: "09:55", eat: "", remark: "JX233 08:00 TPE -> 09:55 HKG" },
-            { day: "Day 1", id: "1-2", name: "香港旺角帝盛酒店", lat: 22.3213, lng: 114.1622, time: "12:00", eat: "", remark: "*站務人工櫃台買團體票\n[機場快綫/東涌綫] 45mins\n機場 → 青衣 → 奧運" },
-            { day: "Day 1", id: "1-3", name: "蘭芳園", lat: 22.2965, lng: 114.1719, time: "", eat: "", remark: "尖沙咀站" },
-            { day: "Day 1", id: "1-4", name: "祥興記上海生煎包(尖沙咀)", lat: 22.2980, lng: 114.1720, time: "", eat: "生煎包", remark: "尖沙咀站" },
-            { day: "Day 1", id: "1-5", name: "利強記雞蛋仔", lat: 22.3015, lng: 114.1718, time: "", eat: "雞蛋仔", remark: "尖沙咀站" },
-            { day: "Day 1", id: "1-6", name: "皇玥-尖沙咀店", lat: 22.2995, lng: 114.1745, time: "", eat: "蝴蝶酥", remark: "拿蝴蝶酥" },
-            { day: "Day 1", id: "1-7", name: "海港城", lat: 22.2950, lng: 114.1668, time: "", eat: "Shake Shack (海港城)", remark: "" },
-            { day: "Day 1", id: "1-8", name: "女人街食飯公司", lat: 22.2974, lng: 114.1740, time: "17:30", eat: "", remark: "已訂位" },
-            { day: "Day 1", id: "1-9", name: "太平山頂", lat: 22.2759, lng: 114.1455, time: "", eat: "", remark: "" },
-            
-            // Day 2
-            { day: "Day 2", id: "2-1", name: "香港迪士尼樂園", lat: 22.3133, lng: 114.0433, time: "10:30", eat: "", remark: "車程約 45mins" },
-            { day: "Day 2", id: "2-2", name: "迪士尼-娛樂表演", lat: 22.3125, lng: 114.0420, time: "", eat: "", remark: "StellaLou夢想起舞吧、魔海奇緣等表演" },
-            { day: "Day 2", id: "2-3", name: "迪士尼-巡遊", lat: 22.3130, lng: 114.0440, time: "", eat: "", remark: "迪士尼好友巡遊派對 1:30" },
-            { day: "Day 2", id: "2-4", name: "迪士尼-星夢光影之旅", lat: 22.3133, lng: 114.0433, time: "20:00", eat: "", remark: "夜間燈光秀 8:00" },
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">12:00</div>
+              <div class="card-name">香港旺角帝盛酒店</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=香港旺角帝盛酒店" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-tags"><span class="tag gold">住宿</span><span class="tag">旺角</span></div>
+        </div>
+      </div>
+    </div>
 
-            // Day 3
-            { day: "Day 3", id: "3-1", name: "港澳客輪碼頭", lat: 22.2890, lng: 114.1520, time: "", eat: "", remark: "車程30mins" },
-            { day: "Day 3", id: "3-2", name: "香港上環港澳碼頭", lat: 22.2897, lng: 114.1525, time: "11:00", eat: "", remark: "船程約 55mins" },
-            { day: "Day 3", id: "3-3", name: "澳門外港碼頭", lat: 22.1970, lng: 113.5560, time: "12:00", eat: "", remark: "" },
-            { day: "Day 3", id: "3-4", name: "澳門勵庭海景酒店", lat: 22.1914, lng: 113.5546, time: "13:00", eat: "", remark: "外港碼頭 → 接駁車 → 金沙" },
-            { day: "Day 3", id: "3-5", name: "威尼斯人度假村", lat: 22.1477, lng: 113.5599, time: "", eat: "", remark: "" },
-            { day: "Day 3", id: "3-6", name: "官也街", lat: 22.1533, lng: 113.5573, time: "", eat: "世紀咖啡豬扒包、安德魯蛋塔、榴槤雪糕", remark: "" },
-            { day: "Day 3", id: "3-7", name: "咀香園餅家", lat: 22.1534, lng: 113.5574, time: "", eat: "十月初五", remark: "拿杏仁餅" },
-            { day: "Day 3", id: "3-8", name: "龍環葡韻博物館", lat: 22.1530, lng: 113.5590, time: "", eat: "", remark: "" },
-            { day: "Day 3", id: "3-9", name: "澳門水舞間", lat: 22.1490, lng: 113.5650, time: "17:00", eat: "", remark: "已訂票，提早15分進場。表演長90分。" },
-            { day: "Day 3", id: "3-10", name: "巴黎人", lat: 22.1438, lng: 113.5615, time: "", eat: "", remark: "華麗飯店巡禮" },
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">13:00</div>
+              <div class="card-name">棋子燒鵝 · 旺角店</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=棋子燒鵝旺角" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-eat"><span class="card-eat-icon">🍽</span><span>燒鵝</span></div>
+          <div class="card-tags"><span class="tag gold">午餐</span></div>
+        </div>
+      </div>
+    </div>
 
-            // Day 4
-            { day: "Day 4", id: "4-1", name: "新葡京酒店", lat: 22.1890, lng: 113.5440, time: "", eat: "", remark: "" },
-            { day: "Day 4", id: "4-2", name: "大三巴牌坊", lat: 22.1975, lng: 113.5406, time: "", eat: "瑪嘉烈蛋撻店", remark: "" },
-            { day: "Day 4", id: "4-3", name: "議事亭前地", lat: 22.1936, lng: 113.5398, time: "", eat: "義順雙皮燉奶", remark: "" },
-            { day: "Day 4", id: "4-4", name: "玫瑰聖母堂", lat: 22.1940, lng: 113.5400, time: "", eat: "老DAY牛雜", remark: "" },
-            { day: "Day 4", id: "4-5", name: "東望洋燈塔", lat: 22.1965, lng: 113.5498, time: "", eat: "", remark: "" },
-            { day: "Day 4", id: "4-6", name: "漁人碼頭", lat: 22.1930, lng: 113.5580, time: "", eat: "", remark: "" },
-            { day: "Day 4", id: "4-7", name: "澳門勵庭海景酒店", lat: 22.1914, lng: 113.5546, time: "", eat: "", remark: "領行李，搭車前往機場" },
-            { day: "Day 4", id: "4-8", name: "澳門機場 (離境)", lat: 22.1494, lng: 113.5917, time: "17:00抵達", eat: "", remark: "JX332 19:15 / JX206 20:50" }
-        ];
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">14:40</div>
+              <div class="card-name">維多利亞港星光大道</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=尖沙咀星光大道" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-remark">散步 · 欣賞維多利亞港景色</div>
+          <div class="card-tags"><span class="tag">尖沙咀</span><span class="tag">海濱</span></div>
+        </div>
+      </div>
+    </div>
 
-        var listContainer = document.getElementById('list-container');
-        var currentDay = "";
-        var markers = [];
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">15:20</div>
+              <div class="card-name">1881 時間塔</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=1881+Heritage+Hong+Kong" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-remark">拍照留念</div>
+          <div class="card-tags"><span class="tag">古蹟</span><span class="tag">打卡</span></div>
+        </div>
+      </div>
+    </div>
 
-        itinerary.forEach(function(item) {
-            if (item.day !== currentDay) {
-                currentDay = item.day;
-                var dayHeader = document.createElement('div');
-                dayHeader.className = 'day-section';
-                dayHeader.innerText = currentDay;
-                listContainer.appendChild(dayHeader);
-            }
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">15:50</div>
+              <div class="card-name">錦綉唐朝</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=錦綉唐朝+尖沙咀" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-remark">尖沙咀站紀念品店</div>
+          <div class="card-tags"><span class="tag">購物</span></div>
+        </div>
+      </div>
+    </div>
 
-            var config = configs[item.day];
-            
-            // 彈窗 HTML 內容
-            var popupHTML = `<div style="font-size:14px; min-width:150px;">
-                <b style="font-size:16px;">${item.id} ${item.name}</b><br>
-                ${item.time ? '🕒 ' + item.time + '<br>' : ''}
-                ${item.eat ? '🍴 ' + item.eat + '<br>' : ''}
-                ${item.remark ? '<div style="margin-top:5px; border-top:1px solid #ddd; padding-top:5px; color:#666;">' + item.remark + '</div>' : ''}
-            </div>`;
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">16:20</div>
+              <div class="card-name">皇玥 · 尖沙咀店</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=皇玥餅店+尖沙咀" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-eat"><span class="card-eat-icon">🥐</span><span>蝴蝶酥</span></div>
+          <div class="card-tags"><span class="tag gold">必買</span></div>
+        </div>
+      </div>
+    </div>
 
-            item.marker = L.marker([item.lat, item.lng], { icon: config.marker })
-                .addTo(map)
-                .bindPopup(popupHTML);
-            markers.push(item.marker);
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">16:30</div>
+              <div class="card-name">尖沙咀站周邊 · 吃吃喝喝</div>
+            </div>
+          </div>
+          <div class="card-tags"><span class="tag optional">自由探索</span></div>
+        </div>
+      </div>
+    </div>
 
-            // 清單 HTML 內容
-            var li = document.createElement('div');
-            li.className = 'list-item';
-            
-            var infoLines = "";
-            if(item.time) infoLines += `<div class="detail-row"><b>🕒 時間</b><span>${item.time}</span></div>`;
-            if(item.eat) infoLines += `<div class="detail-row"><b>🍴 吃喝</b><span>${item.eat}</span></div>`;
-            var remarkLine = item.remark ? `<div class="remark-box">${item.remark}</div>` : '';
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">有時間再去</div>
+              <div class="card-name">海港城 · Shake Shack</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=Shake+Shack+海港城" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-eat"><span class="card-eat-icon">🍔</span><span>Shake Shack（海港城）</span></div>
+          <div class="card-tags"><span class="tag optional">彈性</span></div>
+        </div>
+      </div>
+    </div>
 
-            li.innerHTML = `
-                <div class="num-tag ${config.cssClass}">${item.id}</div>
-                <div class="item-info">
-                    <h3>${item.name}</h3>
-                    ${infoLines}
-                    ${remarkLine}
-                </div>
-            `;
-            
-            li.onclick = function() {
-                map.flyTo([item.lat, item.lng], 16);
-                item.marker.openPopup();
-                // 點擊後滾動清單到此項 (可選)
-                li.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            };
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">17:30</div>
+              <div class="card-name">女人街食飯公司</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=女人街食飯公司+香港" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-eat"><span class="card-eat-icon">🍤</span><span>鮮蝦西多士 / 椰糖粟米</span></div>
+          <div class="card-remark">已訂位</div>
+          <div class="card-tags"><span class="tag gold">晚餐</span></div>
+        </div>
+      </div>
+    </div>
 
-            listContainer.appendChild(li);
-        });
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">19:30</div>
+              <div class="card-name">太平山頂</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=太平山頂+香港" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-remark">乘纜車上山 · 俯瞰香港夜景</div>
+          <div class="card-tags"><span class="tag">夜景</span><span class="tag">纜車</span></div>
+        </div>
+      </div>
+    </div>
 
-        // 自動縮放视野
-        var group = new L.featureGroup(markers);
-        map.fitBounds(group.getBounds().pad(0.1));
-    </script>
+  </div><!-- end timeline -->
+</div>
+</div>
+</section>
+
+<div class="section-divider"><div class="divider-line"></div></div>
+
+<!-- ══════════════════════════════════════
+     DAY 2
+══════════════════════════════════════ -->
+<section id="day2">
+<div class="section-wrap">
+<div class="day-chapter">
+  <div class="chapter-num">02</div>
+  <div class="chapter-label reveal"><span></span>Day Two · Disneyland</div>
+  <h2 class="chapter-title reveal reveal-delay-1">夢想的<em>王國</em></h2>
+  <p class="chapter-date reveal reveal-delay-2">May 29, 2026（Fri）· 香港迪士尼樂園</p>
+
+  <div class="timeline">
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">10:30</div>
+              <div class="card-name">香港迪士尼樂園</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=香港迪士尼樂園" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-remark">車程約 45 分鐘抵達</div>
+          <div class="card-tags"><span class="tag gold">全天</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">現場娛樂表演</div>
+              <div class="card-name">StellaLou 夢想起舞吧</div>
+            </div>
+          </div>
+          <div class="card-remark">12:30 · 1:45 · 4:30 · 5:45 · 7:00</div>
+          <div class="card-tags"><span class="tag gold">表演</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">現場娛樂表演</div>
+              <div class="card-name">迪士尼好友 Live：城堡派對</div>
+            </div>
+          </div>
+          <div class="card-remark">2:15 · 4:00 · 6:00</div>
+          <div class="card-tags"><span class="tag gold">表演</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">現場娛樂表演</div>
+              <div class="card-name">魔海奇緣凱旋慶典</div>
+            </div>
+          </div>
+          <div class="card-remark">12:30 · 2:30 · 4:30 · 6:20</div>
+          <div class="card-tags"><span class="tag gold">表演</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">巡遊</div>
+              <div class="card-name">迪士尼好友巡遊派對</div>
+            </div>
+          </div>
+          <div class="card-remark">開始時間 1:30</div>
+          <div class="card-tags"><span class="tag gold">巡遊</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">20:00</div>
+              <div class="card-name">迪士尼星夢光影之旅：星空派對</div>
+            </div>
+          </div>
+          <div class="card-remark">夜間燈光秀 · 星空派對 8:00</div>
+          <div class="card-tags"><span class="tag gold">夜間表演</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+</section>
+
+<div class="section-divider"><div class="divider-line"></div></div>
+
+<!-- ══════════════════════════════════════
+     DAY 3
+══════════════════════════════════════ -->
+<section id="day3">
+<div class="section-wrap">
+<div class="day-chapter">
+  <div class="chapter-num">03</div>
+  <div class="chapter-label reveal"><span></span>Day Three · Macau</div>
+  <h2 class="chapter-title reveal reveal-delay-1">渡海，抵達<em>另一個世界</em></h2>
+  <p class="chapter-date reveal reveal-delay-2">May 30, 2026（Sat）· 澳門半島 & 路氹城</p>
+
+  <div class="timeline">
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">11:30</div>
+              <div class="card-name">港澳客輪碼頭（香港出發）</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=港澳客運碼頭+上環" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-remark">車程 30 分鐘抵達碼頭</div>
+          <div class="card-tags"><span class="tag">交通</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">11:00</div>
+              <div class="card-name">香港上環港澳碼頭</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=上環港澳碼頭" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-remark">渡輪 · 船程約 55 分鐘</div>
+          <div class="card-tags"><span class="tag">渡輪</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">12:00</div>
+              <div class="card-name">澳門外港碼頭</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=澳門外港碼頭" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-tags"><span class="tag">抵澳</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">13:00</div>
+              <div class="card-name">澳門勵庭海景酒店</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=澳門勵庭海景酒店" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-remark">[巴士] 金沙 / 威尼斯人 / 巴黎人 / 倫敦人接駁車
+外港碼頭 → 金沙</div>
+          <div class="card-tags"><span class="tag gold">住宿</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">下午</div>
+              <div class="card-name">威尼斯人度假村</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=威尼斯人度假村+澳門" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-eat"><span class="card-eat-icon">☕</span><span>世紀咖啡豬扒包 · 貓山王榴槤雪糕</span></div>
+          <div class="card-tags"><span class="tag">路氹城</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">下午</div>
+              <div class="card-name">官也街</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=官也街+澳門氹仔" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-eat"><span class="card-eat-icon">🥚</span><span>安德魯餅店蛋塔</span></div>
+          <div class="card-tags"><span class="tag gold">必吃</span><span class="tag">氹仔</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">下午</div>
+              <div class="card-name">十月初五咱香園餅家</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=咱香園餅家+澳門" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-eat"><span class="card-eat-icon">🥮</span><span>杏仁餅</span></div>
+          <div class="card-remark">拿杏仁餅</div>
+          <div class="card-tags"><span class="tag gold">手信</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">有時間再去</div>
+              <div class="card-name">龍環葡韻住宅式博物館</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=龍環葡韻+澳門" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-tags"><span class="tag optional">彈性</span><span class="tag">博物館</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">17:00</div>
+              <div class="card-name">澳門新濠天地水舞間</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=水舞間+新濠天地+澳門" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-remark">已訂票 · 至少提前 15 分鐘進場 · 表演長度 90 分鐘
+餐飲及購物優惠：憑當日或次日門票可享新濠天地餐飲 8 折
+並換領澳門幣 200 元購物禮券</div>
+          <div class="card-tags"><span class="tag gold">已訂票</span><span class="tag">表演</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">晚間</div>
+              <div class="card-name">華麗飯店巡禮 / 新濠影城迪士尼展</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=新濠影城+澳門" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-remark">[巴士] 金沙 / 威尼斯人 / 巴黎人 / 倫敦人 → 看逛到哪 → 金沙</div>
+          <div class="card-tags"><span class="tag">路氹城</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">有時間再去</div>
+              <div class="card-name">永利皇宮免費纜車</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=永利皇宮+澳門" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-tags"><span class="tag optional">彈性</span><span class="tag">免費</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+</section>
+
+<div class="section-divider"><div class="divider-line"></div></div>
+
+<!-- ══════════════════════════════════════
+     DAY 4
+══════════════════════════════════════ -->
+<section id="day4">
+<div class="section-wrap">
+<div class="day-chapter">
+  <div class="chapter-num">04</div>
+  <div class="chapter-label reveal"><span></span>Day Four · Departure</div>
+  <h2 class="chapter-title reveal reveal-delay-1">最後的<em>漫遊</em></h2>
+  <p class="chapter-date reveal reveal-delay-2">May 31, 2026（Sun）· 澳門市區 & 離境</p>
+
+  <div class="timeline">
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">上午</div>
+              <div class="card-name">新葡京酒店</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=新葡京酒店+澳門" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-tags"><span class="tag">澳門半島</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">上午</div>
+              <div class="card-name">大三巴牌坊</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=大三巴牌坊+澳門" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-eat"><span class="card-eat-icon">🥚</span><span>瑪嘉烈蛋撻店</span></div>
+          <div class="card-tags"><span class="tag gold">地標</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">上午</div>
+              <div class="card-name">議事亭前地</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=議事亭前地+澳門" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-eat"><span class="card-eat-icon">🥛</span><span>義順雙皮燉奶</span></div>
+          <div class="card-tags"><span class="tag">廣場</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">上午</div>
+              <div class="card-name">玫瑰聖母堂</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=玫瑰聖母堂+澳門" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-eat"><span class="card-eat-icon">🍢</span><span>老 DAY 牛雜</span></div>
+          <div class="card-tags"><span class="tag">教堂</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">上午</div>
+              <div class="card-name">澳門回憶手信工作室</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=花王堂街+澳門" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-remark">船票小物 · 已搬家，目前在花王堂街</div>
+          <div class="card-tags"><span class="tag gold">手信</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">上午</div>
+              <div class="card-name">澳門大賽車博物館</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=澳門大賽車博物館" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-tags"><span class="tag">博物館</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">下午</div>
+              <div class="card-name">羅馬劇場漁人碼頭</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=澳門漁人碼頭" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-tags"><span class="tag">景點</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="spot-card">
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-meta-left">
+              <div class="card-time">離境前</div>
+              <div class="card-name">澳門勵庭海景酒店（取行李）</div>
+            </div>
+            <a class="card-map-btn" href="https://maps.google.com/?q=澳門勵庭海景酒店" target="_blank">↗ Maps</a>
+          </div>
+          <div class="card-remark">領行李
+[計程車] 15 分鐘 · 或在金沙搭接駁車前往機場</div>
+          <div class="card-tags"><span class="tag">交通</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Departure flights -->
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div style="margin-bottom:4px">
+        <p style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.2em;color:var(--gold);margin-bottom:14px;padding-left:2px">17:00 前抵達機場 · 擇一搭乘</p>
+        <div class="flight-card" style="margin-bottom:12px">
+          <div class="flight-row">
+            <div class="flight-airport">
+              <div class="flight-code">MFM</div>
+              <div class="flight-city">澳門</div>
+            </div>
+            <div class="flight-arrow">
+              <div class="flight-num">JX 332 · STARLUX</div>
+              <div class="flight-line"></div>
+              <div class="flight-duration">約 1 小時 55 分鐘</div>
+            </div>
+            <div class="flight-airport">
+              <div class="flight-code">RMQ</div>
+              <div class="flight-city">台中</div>
+            </div>
+          </div>
+          <div class="flight-times">
+            <span>19:15 出發</span>
+            <span>21:10 抵達</span>
+          </div>
+          <div class="flight-terminal">抵達 T1</div>
+          <div class="flight-note">✦ 飛台中清泉崗機場</div>
+        </div>
+        <div class="flight-card">
+          <div class="flight-row">
+            <div class="flight-airport">
+              <div class="flight-code">MFM</div>
+              <div class="flight-city">澳門</div>
+            </div>
+            <div class="flight-arrow">
+              <div class="flight-num">JX 206 · STARLUX</div>
+              <div class="flight-line"></div>
+              <div class="flight-duration">約 1 小時 50 分鐘</div>
+            </div>
+            <div class="flight-airport">
+              <div class="flight-code">TPE</div>
+              <div class="flight-city">台北桃園</div>
+            </div>
+          </div>
+          <div class="flight-times">
+            <span>20:50 出發</span>
+            <span>22:40 抵達</span>
+          </div>
+          <div class="flight-terminal">抵達 T1</div>
+          <div class="flight-note">✦ 飛桃園國際機場</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+</section>
+
+<div class="section-divider"><div class="divider-line"></div></div>
+
+<!-- ══════════════════════════════════════
+     LINKS
+══════════════════════════════════════ -->
+<section id="links">
+<div class="section-wrap">
+  <div class="chapter-label reveal"><span></span>Resources</div>
+  <h2 class="links-title reveal reveal-delay-1">相關<em>連結</em></h2>
+  <p class="links-sub reveal reveal-delay-2">行前必讀 · 攻略資源 · 官方資訊</p>
+
+  <div class="links-grid">
+
+    <a class="link-card reveal" href="https://docs.google.com/spreadsheets/d/1Hzp6yhl6cmhaLh-PZKrvopYYVLA6abC1CeXmbiGUiAo/edit?usp=drivesdk" target="_blank">
+      <div class="link-type">Google Sheet</div>
+      <div class="link-name">導遊行程總覽</div>
+      <div class="link-desc">by 小羊 · 完整行程規劃試算表</div>
+      <div class="link-url">docs.google.com/spreadsheets/…</div>
+      <div class="link-arrow">↗ 開啟</div>
+    </a>
+
+    <a class="link-card reveal reveal-delay-1" href="https://park-butler.pages.dev/" target="_blank">
+      <div class="link-type">Web</div>
+      <div class="link-name">香港迪士尼攻略</div>
+      <div class="link-desc">by 小羊 · 表演時刻 & 園區完整攻略</div>
+      <div class="link-url">park-butler.pages.dev</div>
+      <div class="link-arrow">↗ 開啟</div>
+    </a>
+
+    <a class="link-card reveal reveal-delay-2" href="https://dianchinwu.github.io/travelHKMacao/" target="_blank">
+      <div class="link-type">Web</div>
+      <div class="link-name">妹分組行程</div>
+      <div class="link-desc">by 妹 · 港澳行程分組規劃</div>
+      <div class="link-url">dianchinwu.github.io/travelHKMacao</div>
+      <div class="link-arrow">↗ 開啟</div>
+    </a>
+
+    <a class="link-card reveal" href="https://dianchinwu.github.io/travelHKMacao/hkdisney" target="_blank">
+      <div class="link-type">Web</div>
+      <div class="link-name">香港迪士尼地圖 & 設施</div>
+      <div class="link-desc">by 妹 · 園區地圖分佈與設施資訊</div>
+      <div class="link-url">dianchinwu.github.io/…/hkdisney</div>
+      <div class="link-arrow">↗ 開啟</div>
+    </a>
+
+    <a class="link-card reveal reveal-delay-1" href="https://www.notion.so/1b0aa46d2dbf800393add991083a2e9f?source=copy_link" target="_blank">
+      <div class="link-type">Notion</div>
+      <div class="link-name">自行整理資訊</div>
+      <div class="link-desc">by 妹 · Notion 行程筆記總整理</div>
+      <div class="link-url">notion.so/…</div>
+      <div class="link-arrow">↗ 開啟</div>
+    </a>
+
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════
+     FOOTER
+══════════════════════════════════════ -->
+<footer>
+  <div class="footer-bg"></div>
+  <div class="footer-eyebrow">Hong Kong · Macau · May 2026</div>
+  <div class="footer-title">帶著這段旅行，<br>回家。</div>
+  <p class="footer-quote">
+    「每一次旅行，都是一次向自己的出走。<br>
+    那些吃過的食物、走過的街道、看見的燈火，<br>
+    最終都會成為你的一部分。」
+  </p>
+  <div class="footer-meta">© 2026 · HK &amp; MAC Travel Itinerary · May 28–31</div>
+</footer>
+
+<script>
+// ── Intersection Observer for reveal animations ──
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.08 });
+
+document.querySelectorAll('.reveal, .tl-item').forEach(el => observer.observe(el));
+
+// ── Active nav on scroll ──
+const sections = ['hero','day1','day2','day3','day4','links'];
+const navDays = document.querySelectorAll('.nav-day');
+const navLinks = document.querySelectorAll('.nav-links a');
+
+const sectionObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const id = e.target.id;
+      navLinks.forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+      });
+    }
+  });
+}, { threshold: 0.35 });
+
+sections.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) sectionObserver.observe(el);
+});
+
+// ── Smooth scroll for anchor links ──
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) {
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+
+// ── Subtle parallax on hero ──
+const heroBg = document.querySelector('.hero-grid');
+window.addEventListener('scroll', () => {
+  const y = window.scrollY;
+  if (heroBg) heroBg.style.transform = `translateY(${y * 0.2}px)`;
+}, { passive: true });
+</script>
 </body>
 </html>
